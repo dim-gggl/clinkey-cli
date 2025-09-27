@@ -277,7 +277,7 @@ def clinkey(length: int | None = None,
 def parse_options():
     options = {
         "lower": ["lower", "low", "-l", "--lower"],
-        "no_sep_exp": ["no_sep", "ns", "-ns", "--no-sep", "no-sep", "ns"]
+        "no_sep": ["no_sep", "ns", "-ns", "--no-sep", "no-sep", "ns"]
     }
     result = []
     user_choices = view.get_options().strip()

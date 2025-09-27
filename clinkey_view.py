@@ -184,7 +184,7 @@ class ClinkeyView:
             self._display_logo_rich()
 
             length_text = Text.from_markup(
-				"\nHow [bold light_green]LONG[/] do you like it ?\n\n", 
+				"\nHow [bold light_green]LONG[/] do you like it ?", 
 				style=reg_style
 			)
             console.print(Align.center(length_text))
@@ -203,7 +203,7 @@ class ClinkeyView:
             self._display_logo_rich()
 
             number_text = Text.from_markup(
-				"\nHow [bold light_green]MANY[/] you fancy at once ?\n\n", 
+				"\nHow [bold light_green]MANY[/] you fancy at once ?", 
 				style=reg_style
 			)
             console.print(Align.center(number_text))
@@ -264,22 +264,48 @@ class ClinkeyView:
         console.clear()
         self._display_logo_rich()
 
-        passwords_text = Text.from_markup("Your ClinKey [bold light_green]PASSWORDS[/] \nare \n[bold light_green]READY[/]", style=clinkey_white_style)
-        console.print(Panel.fit(Align.center(passwords_text), padding=(0, 1), box=ROUNDED, border_style=clinkey_pink_style), justify="center")
+        passwords_text = Text.from_markup(
+			"Your ClinKey [bold light_green]PASSWORDS[/] \nare \n[bold light_green]READY[/]", 
+			style=clinkey_white_style
+		)
+        console.print(
+			Panel.fit(
+			    Align.center(passwords_text), 
+			    padding=(0, 1), 
+			    box=ROUNDED, 
+			    border_style=clinkey_pink_style
+			    ), 
+			justify="center"
+		)
 
         for i, password in enumerate(passwords, 1):
             password_line = Text(f"{password:^}", style=clinkey_green_style)
             console.print(Align.center(password_line), justify="center")
 
         console.print()
-        copy_hint = Text.from_markup("[bold orchid1]TIPS[/]\nChoose one to copy\n\n", style=reg_style)
+        copy_hint = Text.from_markup(
+			"[bold orchid1]TIPS[/]\nChoose one to copy\n\n", 
+			style=reg_style
+		)
         console.print(Align.center(copy_hint), justify="center")
 	
     def get_options(self):
         options = {}
-        console.print("Enter any further options seperate by space", style=clinkey_white_style, justify="center")
+        console.print(
+			Text.from_markup(
+			    "Any further [bold light_green]OPTIONS[/] [dim white](seperate by spaces)[/] ?", 
+			    style=clinkey_white_style
+			    ), 
+			justify="center"
+		)
         return input()
 
     def get_output(self):
-        console.print("Enter the path of the file to save the result", style=clinkey_white_style, justify="center")
+        console.print(
+			Text.from_markup(
+				"Enter the path of the file to save the result", 
+				style=clinkey_white_style
+			), 
+			justify="center"
+		)
         return input()
