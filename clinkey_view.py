@@ -3,10 +3,12 @@ This module contains the ClinkeyView class.
 """
 
 from typing import Any, Callable
+from rich import box
 from rich.console import Console
 from rich.style import Style
 from rich.align import Align
 from rich.text import Text
+from rich.table import Table
 from rich.panel import Panel
 from rich.box import ROUNDED
 
@@ -277,17 +279,21 @@ class ClinkeyView:
 			    ), 
 			justify="center"
 		)
+        table = Table(show_header=False, box=ROUNDED, border_style=clinkey_pink_style)
+        table.add_column("", style=clinkey_green_style)
+        for password in passwords:
+            password_line = Align.center(Text(f"{password:^}"))
+            table.add_row(password_line)
+        console.print(table, justify="center")
 
-        for i, password in enumerate(passwords, 1):
-            password_line = Text(f"{password:^}", style=clinkey_green_style)
-            console.print(Align.center(password_line), justify="center")
-
-        console.print()
         copy_hint = Text.from_markup(
 			"[bold orchid1]TIPS[/]\nChoose one to copy\n\n", 
 			style=reg_style
 		)
-        console.print(Align.center(copy_hint), justify="center")
+        console.print(
+			Align.center(copy_hint),  
+			justify="center"
+		)
 	
     def get_options(self):
         options = {}
