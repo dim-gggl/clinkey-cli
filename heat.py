@@ -20,7 +20,7 @@ SYLLABES = []
 for c in CONSONANTS:
     for v in VOWELS:
         SYLLABES.append(c + v)
-        
+
 SYLLABES_COMPLEXES = ['TRE', 'TRI', 'TRO', 'TRA', 'TRE', 'TRI', 'TRO', 'TRA', 'DRE', 'DRI', 'DRO', 'DRA',
                     'BRE', 'BRI', 'BRO', 'BRA', 'CRE', 'CRI', 'CRO', 'CRA', 'FRE', 'FRI', 'FRO', 'FRA',
                     'GRE', 'GRI', 'GRO', 'GRA', 'PRE', 'PRI', 'PRO', 'PRA', 'SRE', 'SRI', 'SRO', 'SRA',
@@ -33,7 +33,7 @@ class Clinkey(ClinkeyView):
     """
     Generate pronounceable passwords based on French syllables.
     """
-    
+
     def __init__(self) -> None:
         """
         Initialize the generator with the French syllables.
@@ -42,66 +42,66 @@ class Clinkey(ClinkeyView):
         self._consonnes = CONSONANTS
         self._voyelles = VOWELS
         self._syllabes_simples = SYLLABES
-        
+
         # More complex syllables
         self._syllabes_complexes = SYLLABES_COMPLEXES
-        
+
         # Special characters for super_strong
         self._caracteres_speciaux = SPECIALS
-        
+
         # Numbers
         self._chiffres = FIGURES
-    
+
     def _generate_simple_syllable(self) -> str:
         """
         Generate a simple syllable of 2 letters (consonant + vowel).
         """
         return random.choice(self._syllabes_simples)
-    
+
     def _generate_complex_syllable(self) -> str:
         """
         Generate a complex syllable of 3 letters.
         """
         return random.choice(self._syllabes_complexes)
-    
+
     def _generate_pronounceable_word(self, min_length: int = 4, max_length: int = 8) -> str:
         """
         Generate a pronounceable word of variable length.
         """
         mot = ""
         longueur = random.randint(min_length, max_length)
-        
+
         # Start with a simple syllable
         mot += self._generate_simple_syllable()
-        
+
         # Add additional syllables
         while len(mot) < longueur:
             if random.choice([True, False]):
                 mot += self._generate_simple_syllable()
             else:
                 mot += self._generate_complex_syllable()
-        
+
         # Truncate if necessary
         return mot[:longueur]
-    
+
     def _generate_number_block(self, longueur: int = 3) -> str:
         """
         Generate a block of numbers.
         """
         return ''.join(random.choices(self._chiffres, k=longueur))
-    
+
     def _generate_special_characters_block(self, longueur: int = 3) -> str:
         """
         Generate a block of special characters.
         """
         return ''.join(random.choices(self._caracteres_speciaux, k=longueur))
-    
+
     def _generate_separator(self) -> str:
         """
         Generate a separator between blocks.
         """
         return random.choice(['-', '_'])
-    
+
     def super_strong(self) -> str:
         """
         Generate a super strong password with letters, numbers and special characters.
@@ -119,7 +119,7 @@ class Clinkey(ClinkeyView):
         specials = []
         for _ in range(2):  # Retour à 2 car on n'a besoin que de 2 blocs de caractères spéciaux
             specials.append(self._generate_special_characters_block(rint(3, 6)))
-        
+
         seps = []
         for _ in range(6):
             seps.append(self._generate_separator())
@@ -127,13 +127,13 @@ class Clinkey(ClinkeyView):
         result = ""
         # Première itération : MOT-CARACTERES-CHIFFRES
         result += words.pop() + seps.pop() + specials.pop() + seps.pop() + figures.pop() + seps.pop()
-        # Deuxième itération : MOT-CARACTERES-CHIFFRES  
+        # Deuxième itération : MOT-CARACTERES-CHIFFRES
         result += words.pop() + seps.pop() + specials.pop() + seps.pop() + figures.pop() + seps.pop()
         # Troisième itération : MOT (le dernier mot)
         result += words.pop()
-        
+
         return result.strip()
-    
+
     def strong(self) -> str:
         """
         Generate a strong password with letters and numbers.
@@ -147,17 +147,17 @@ class Clinkey(ClinkeyView):
         figures = []
         for _ in range(3):
             figures.append(self._generate_number_block(rint(3, 6)))
-        
+
         seps = []
         for _ in range(6):
             seps.append(self._generate_separator())
-        
+
         result = ""
         for _ in range(3):
             result += words.pop(0) + seps.pop(0) + figures.pop(0) + seps.pop(0)
-        
+
         return result.strip()
-    
+
     def normal(self) -> str:
         """
         Generate a normal password with only letters.
@@ -171,13 +171,13 @@ class Clinkey(ClinkeyView):
         seps = []
         for _ in range(6):
             seps.append(self._generate_separator())
-        
+
         result = ""
         for _ in range(3):
             result += words.pop(0) + seps.pop(0)
-        
+
         return result.strip()
-    
+
     def generate_password(self, method, target_length: int = 16):
         result = ""
         while len(result) < target_length:
@@ -191,11 +191,11 @@ class Clinkey(ClinkeyView):
                 break
         return result
 
-def generate(length: int = 16, 
-            type : str = "normal", 
-            number: int = 1, 
-            no_separator : bool = False, 
-            lower : bool = False, 
+def generate(length: int = 16,
+            type_ : str = "normal",
+            number: int = 1,
+            no_separator : bool = False,
+            lower : bool = False,
             output: str = None):
     clinkey = Clinkey()
     action = {
@@ -205,7 +205,7 @@ def generate(length: int = 16,
     }
     passwords = []
     for _ in range(number):
-        passwords.append(clinkey.generate_password(action[type], length))
+        passwords.append(clinkey.generate_password(action[type_], length))
     if lower:
         passwords = [password.lower() for password in passwords]
     if no_separator:
@@ -223,13 +223,13 @@ def heat():
 
 @heat.command()
 @click.option("-l", '--length', default=None, type=int, help='Longueur du mot de passe')
-@click.option("-t", '--type', default=None, help='Type: normal, strong, super_strong')
+@click.option("-t", '--type', "type_", default=None, help='Type: normal, strong, super_strong')
 @click.option("-n", '--number', default=None, type=int, help='Nombre de mots de passe à générer')
 @click.option("-ns", "--no-sep", is_flag=True, help="Supprimer les séparateurs")
 @click.option("-low", "--lower", is_flag=True, help="Convertir en minuscules")
 @click.option("-o", "--output", help="Fichier de sortie")
-def clinkey(length: int | None = None,
-          type: str | None = None,
+def clinkey(length: int | None = None, 
+          type_: str | None = None,
           number: int | None = None,
           no_sep: bool = False,
           lower: bool = False,
@@ -237,46 +237,57 @@ def clinkey(length: int | None = None,
     """Générateur de mots de passe prononçables basé sur les syllabes françaises"""
 
     # Mode interactif si pas d'arguments
-    interactive_mode = length is None and type is None and number is None
+    interactive_mode = length is None and type_ is None and number is None
 
     if interactive_mode:
         view.display_logo()
-
-    if length is None:
-        if interactive_mode:
-            length = view.ask_for("length")
+        length = view.ask_for("length")
         if not length:
             length = 16
-
-    if type is None:
-        if interactive_mode:
-            type = view.ask_for("type")
-        if not type:
-            type = "normal"
-
-    if number is None:
-        if interactive_mode:
-            number = view.ask_for("number")
+        type_ = view.ask_for("type_")
+        if not type_:
+            type_ = "normal"
+        number = view.ask_for("number")
         if not number:
-            number = 1
+            number = 5
+        options = parse_options()
+        if "lower" in options:
+            lower = True
+        if "no_sep" in options:
+            no_sep = True
 
     passwords = generate(
         length=length,
-        type=type,
+        type_=type_,
         number=number,
         no_separator=no_sep,
         lower=lower,
         output=output
     )
 
-    if interactive_mode:
-        view.display_passwords(passwords)
+    if output:
+        with open(output, "w") as file:
+            for password in passwords:
+                file.write(password + "\n")
     else:
-        # Mode ligne de commande - affichage simple
-        for password in passwords:
-            console.print(password, style="bright_green")
-
+        view.display_passwords(passwords)
     return passwords
+
+
+def parse_options():
+    options = {
+        "lower": ["lower", "low", "-l", "--lower"],
+        "no_sep_exp": ["no_sep", "ns", "-ns", "--no-sep", "no-sep", "ns"]
+    }
+    result = []
+    user_choices = view.get_options().strip()
+    if user_choices:
+        choices = user_choices.split(" ")
+        for choice in choices:
+            for option, versions in options.items():
+                if choice.strip().lower() in versions:
+                    result.append(option)
+    return result	
 
 if __name__ == "__main__":
     heat()

@@ -4,14 +4,20 @@ This module contains the ClinkeyView class.
 
 from typing import Any, Callable
 from rich.console import Console
+from rich.style import Style
 from rich.align import Align
 from rich.text import Text
 from rich.panel import Panel
 from rich.box import ROUNDED
 
 
-console = Console(style="on grey3")
+console = Console(style="on grey11")
 console.clear()
+
+clinkey_green_style = Style(color="light_green", bold=True)
+clinkey_pink_style = Style(color="orchid1", bold=True)
+clinkey_white_style = Style(color="grey100", bold=True)
+reg_style = Style(color="white")
 
 class ClinkeyView:
     """
@@ -145,17 +151,28 @@ class ClinkeyView:
         """
         Ask user for different parameters based on input.
         """
-        if param == "type":
+        if param == "type_":
             console.clear()
             self._display_logo_rich()
 
-            type_text = Text("\nHow twisted do you want it ?", style="bright_white")
+            type_text = Text.from_markup(
+				"\nHow [bold light_green]TWISTED[/] do you want it ?\n\n", 
+				style=reg_style
+			)
             console.print(Align.center(type_text))
 
-            choices = Text.from_markup("\n1 - [bold plum1]Vanilla[/] (Regular alphabet letters)\n2 - [bold plum1]Spicy[/] (Alphabet + a pinch of digits)\n3 - [bold plum1]So NAAASTY[/] (All including the special ones)", style="grey70")
+            choices = Text.from_markup(
+				"\n1 - [bold orchid1]Vanilla[/] (regular alphabet letters)\n"
+				"2 - [bold orchid1]Spicy[/] (alphabet + a pinch of digits)\n"
+				"3 - [bold orchid1]So NAAASTY[/] (all including the special ones)", 
+				style=reg_style
+			)
             console.print(Align.center(choices))
 
-            prompt = Text("\nWhat's your tribe (1/2/3): ", style="plum1")
+            prompt = Text.from_markup(
+				"\nWhat's your [bold light_green]TRIBE[/] (1 / 2 / 3): \n\n", 
+				style="dim white"
+			)
             console.print(Align.center(prompt), end="")
 
             choice = input()
@@ -166,10 +183,13 @@ class ClinkeyView:
             console.clear()
             self._display_logo_rich()
 
-            length_text = Text("\nHow long do you like it ?", style="bright_white")
+            length_text = Text.from_markup(
+				"\nHow [bold light_green]LONG[/] do you like it ?\n\n", 
+				style=reg_style
+			)
             console.print(Align.center(length_text))
 
-            prompt = Text("\nAbout the size (default: 16): ", style="plum1")
+            prompt = Text.from_markup("\n(default: 16): \n\n", style="dim white")
             console.print(Align.center(prompt), end="")
 
             try:
@@ -182,10 +202,13 @@ class ClinkeyView:
             console.clear()
             self._display_logo_rich()
 
-            number_text = Text("\nHow many you fancy at once ?", style="bright_white")
+            number_text = Text.from_markup(
+				"\nHow [bold light_green]MANY[/] you fancy at once ?\n\n", 
+				style=reg_style
+			)
             console.print(Align.center(number_text))
 
-            prompt = Text("\nYour number (default: 1): ", style="plum1")
+            prompt = Text.from_markup("\n(default: 1): \n\n", style="dim white")
             console.print(Align.center(prompt), end="")
 
             try:
@@ -204,11 +227,23 @@ class ClinkeyView:
 ╔═╝  ║    ╝  ╔═   ║ ║  ╔═╝  ║ ║
 ║    ║    ║  ║ ║  ╔╝   ╔═╝  ═╔╝
 ══╝  ══╝  ╝  ╝ ╝  ╝ ╝  ══╝   ╝ 
-        """, style="#5fff87")  # Vert néon menthe glaciale
+        """, style=clinkey_green_style)
 
-        console.print("\n\n", Panel.fit((logo), padding=(1, 7), box=ROUNDED, border_style="plum1"), justify="center")
+        console.print(
+			"\n\n", 
+			Panel.fit(
+				(logo), 
+				padding=(0, 2), 
+				box=ROUNDED, 
+				border_style=clinkey_pink_style
+			), 
+			justify="center"
+		)
 
-        subtitle = Text.from_markup("Your own [bold #5fff87]secret buddy[/]...", style="grey70 italic")
+        subtitle = Text.from_markup(
+			"Your own [bold light_green]SECRET BUDDY[/]...\n\n", 
+			style=reg_style
+		)
         console.print(Align.center(subtitle))
 
     def display_logo(self):
@@ -218,7 +253,7 @@ class ClinkeyView:
         console.clear()
         self._display_logo_rich()
 
-        welcome_text = Text("\n\nPress ENTER to continue...\n\n", style="plum1")
+        welcome_text = Text.from_markup("\n\nPress [bold light_green]ENTER[/] to continue...\n\n", style=reg_style)
         console.print(Align.center(welcome_text))
         input()
 
@@ -229,13 +264,22 @@ class ClinkeyView:
         console.clear()
         self._display_logo_rich()
 
-        passwords_text = Text("\nYour passwords are ready :\n", style="rgb(64,224,208) bold")
-        console.print(Align.center(passwords_text))
+        passwords_text = Text.from_markup("Your ClinKey [bold light_green]PASSWORDS[/] \nare \n[bold light_green]READY[/]", style=clinkey_white_style)
+        console.print(Panel.fit(Align.center(passwords_text), padding=(0, 1), box=ROUNDED, border_style=clinkey_pink_style), justify="center")
 
         for i, password in enumerate(passwords, 1):
-            password_line = Text(f"{i:2d}. {password}", style="bright_white on grey23")
-            console.print(Align.center(password_line))
+            password_line = Text(f"{password:^}", style=clinkey_green_style)
+            console.print(Align.center(password_line), justify="center")
 
         console.print()
-        copy_hint = Text("Tips: Choose one to copy", style="grey70 italic")
-        console.print(Align.center(copy_hint))
+        copy_hint = Text.from_markup("[bold orchid1]TIPS[/]\nChoose one to copy\n\n", style=reg_style)
+        console.print(Align.center(copy_hint), justify="center")
+	
+    def get_options(self):
+        options = {}
+        console.print("Enter any further options seperate by space", style=clinkey_white_style, justify="center")
+        return input()
+
+    def get_output(self):
+        console.print("Enter the path of the file to save the result", style=clinkey_white_style, justify="center")
+        return input()
