@@ -37,8 +37,7 @@ class Clinkey:
 	Generate pronounceable passwords based on Human-friendly syllables.
 	"""
 
-	def __init__(self, new_seperator: str = None, 
-	mix_case: bool = False) -> None:
+	def __init__(self, new_seperator: str = None) -> None:
 		# Commonn syllables
 		self._consonnants = CONSONANTS
 		self._vowels = VOWELS
@@ -246,7 +245,6 @@ def heat():
 @click.option("-ns", "--no-sep", is_flag=True, help="With no hyphens")
 @click.option("-low", "--lower", is_flag=True, help="Lowercased")
 @click.option("-nes", "--new-sep", "new_seperator", is_flag=True, help="New seperator")
-@click.option("-mx", "--mix-case", is_flag=True, help="Mixin cases")
 @click.option("-o", "--output", help="Output file path")
 def clinkey(length: int | None = None, 
 		  type_: str | None = None,
@@ -254,7 +252,6 @@ def clinkey(length: int | None = None,
 		  no_sep: bool = False,
 		  lower: bool = False,
 		  new_seperator: str = None,
-		  mix_case: bool = False,
 		  output: str = None) -> list[str]:
 	"""
 	Human-friendly pronounceable password generator.
@@ -300,8 +297,6 @@ def clinkey(length: int | None = None,
 			no_sep = True
 		if "new_seperator" in options:
 			new_seperator = True
-		if "mix_case" in options:
-			mix_case = True
 			
 
 	passwords = generate(
@@ -311,7 +306,6 @@ def clinkey(length: int | None = None,
 		no_separator=no_sep,
 		lower=lower,
 		new_seperator=new_seperator,
-		mix_case=mix_case,
 		output=output
 	)
 
