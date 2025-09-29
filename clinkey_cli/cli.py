@@ -24,7 +24,7 @@ class ClinkeyView:
 
     def __init__(self) -> None:
         self._logo_style = {
-            "title_color": "light_green",
+            "title_color": "bold light_green",
             "accent_color": "orchid1",
             "text_color": "grey100",
         }
@@ -79,8 +79,8 @@ class ClinkeyView:
         )
         choices = Text.from_markup(
             "1 - [bold orchid1]Vanilla[/] (letters only)\n"
-            "2 - [bold orchid1]Spicy[/] (letters and digits)\n"
-            "3 - [bold orchid1]Inferno[/] (letters, digits, symbols)",
+            "2 - [bold orchid1]Twisted[/] (letters and digits)\n"
+            "3 - [bold orchid1]So NAAASTY[/] (letters, digits, symbols)",
             style="white",
         )
         console.print(Align.center(choices))
@@ -102,7 +102,7 @@ class ClinkeyView:
         console.print(
             Align.center(
                 Text.from_markup(
-                    "How [bold light_green]LONG[/] should it be?",
+                    "How [bold light_green]LONG[/] do you like it ?",
                     style="white",
                 )
             )
@@ -124,7 +124,7 @@ class ClinkeyView:
         console.print(
             Align.center(
                 Text.from_markup(
-                    "How [bold light_green]MANY[/] passwords do you need?",
+                    "How [bold light_green]MANY[/] you fancy at once ?",
                     style="white",
                 )
             )
@@ -192,12 +192,12 @@ class ClinkeyView:
         table = Table(show_header=False, box=box.ROUNDED, border_style=self._logo_style["accent_color"])
         table.add_column("password", style=self._logo_style["title_color"], justify="center")
         for password in passwords:
-            table.add_row(Text(password, style="white", justify="center"))
+            table.add_row(Text(password, style="bold light_green", justify="center"))
         console.print(table, justify="center")
 
         console.print(
             Align.center(
-                Text.from_markup("Choose one to copy and stay safe!", style="bright_black"),
+                Text.from_markup("Choose one to copy !", style="white"),
             )
         )
 
