@@ -282,7 +282,7 @@ class ClinkeyView:
         table = Table(show_header=False, box=ROUNDED, border_style=clinkey_pink_style)
         table.add_column("", style=clinkey_green_style)
         for password in passwords:
-            password_line = Align.center(Text(f"{password:^}"))
+            password_line = Align.center(Text(f"{password:^}", style=clinkey_green_style))
             table.add_row(password_line)
         console.print(table, justify="center")
 

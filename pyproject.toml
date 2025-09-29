@@ -1,10 +1,33 @@
+[build-system]
+requires = ["setuptools>=66", "wheel"]
+build-backend = "setuptools.build_meta"
+
 [project]
-name = "clinkey"
-version = "0.1.0"
-description = "Add your description here"
+name = "clinkey-cli"
+version = "1.0.1"
+description = "A command-line tool for generating strong passwords and secret keys."
 readme = "README.md"
-requires-python = ">=3.14"
+requires-python = ">=3.10"
+license = "MIT"
+authors = [{name = "Dimitri Gaggioli"}]
+keywords = ["password", "generator", "cli", "security"]
+
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+    "Environment :: Console",
+    "Topic :: Security",
+    "Topic :: Utilities",
+]
 dependencies = [
+    "build>=1.3.0",
     "click>=8.3.0",
     "rich>=14.1.0",
 ]
+
+[project.scripts]
+clinkey = "clinkey_cli.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["clinkey_cli*"]
