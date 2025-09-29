@@ -1,8 +1,12 @@
-<div align="center">👾 Clinkey
-
+```ruby
 ╔═╝  ║    ╝  ╔═   ║ ║  ╔═╝  ║ ║
 ║    ║    ║  ║ ║  ╔╝   ╔═╝  ═╔╝
 ══╝  ══╝  ╝  ╝ ╝  ╝ ╝  ══╝   ╝
+```
+![GitHub License](https://img.shields.io/github/license/dim-gggl/Clinkey?style=plastic)
+![PyPI - Version](https://img.shields.io/pypi/v/clinkey-cli?style=plastic&logo=python&logoColor=yellow)
+![GitHub Release Date](https://img.shields.io/github/release-date/dim-gggl/clinkey-cli?style=plastic&logo=github&logoColor=green)
+
 
 Your SECRET BUDDY for creating passwords you can actually remember.</div>Clinkey isn't your average password generator. It crafts strong, secure, and pronounceable passwords based on easy-to-remember syllables. Forget A9$fG!2p@k7z. Think TRENA-527-BROVO.🚀 InstallationThe easiest way is to use pipx (recommended for CLI tools) or pip.# With pipx (recommended)
 pipx install clinkey-cli

@@ -10,7 +10,7 @@ from typing import Callable, Dict
 class Clinkey:
     """Generate pronounceable passwords with different complexity presets."""
 
-    def __init__(self) -> None:
+    def __init__(self, new_separator: str = None) -> None:
         alphabet = string.ascii_uppercase
         vowels = "AEIOUY"
         self._consonants = [char for char in alphabet if char not in vowels]
@@ -108,7 +108,7 @@ class Clinkey:
             "strong": self.strong,
             "super_strong": self.super_strong,
         }
-        self._new_separator = new_separator
+        self.new_separator = new_separator
 
     def _generate_simple_syllable(self) -> str:
         return random.choice(self._simple_syllables)
@@ -133,6 +133,8 @@ class Clinkey:
         return "".join(random.choices(self._specials, k=length))
 
     def _generate_separator(self) -> str:
+        if self.new_separator:
+            return self.new_separator
         return random.choice(self._separators)
 
     def super_strong(self) -> str:
