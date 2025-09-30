@@ -13,7 +13,7 @@ from rich.panel import Panel
 from rich.table import Table
 from rich.text import Text
 
-from .main import Clinkey
+from clinkey_cli.main import Clinkey
 
 
 console = Console(style="on grey11")
@@ -152,7 +152,11 @@ class ClinkeyView:
             )
         )
         console.print(
-            Align.center(Text.from_markup("Available: lower, no_sep", style="bright_black"))
+            Align.center(Text.from_markup(
+                "Available: lower, no_sep", 
+                style="bright_black"
+                )
+                )
         )
         choices = input().strip()
         return choices.split() if choices else []
@@ -171,6 +175,31 @@ class ClinkeyView:
         )
         value = input().strip()
         return value or None
+
+    def ask_for_separator(self) -> Optional[str]:
+        self._clear()
+        console.print(self._logo_panel(), justify="center")
+        console.print(
+            Align.center(
+                Text.from_markup(
+                    "Custom [bold light_green]SEPARATOR[/]? (press ENTER to skip)",
+                    style="white",
+                )
+            )
+        )
+        console.print(
+            Align.center(
+                Text.from_markup("Use exactly one non-space character.", style="bright_black")
+            )
+        )
+        console.print(
+            Align.center(Text.from_markup("Value: ", style="bright_black")),
+            end="",
+        )
+        value = input().strip()
+        if not value:
+            return None
+        return value[0]
 
     def display_passwords(self, passwords: Iterable[str]) -> None:
         self._clear()
@@ -206,7 +235,7 @@ view = ClinkeyView()
 
 def _parse_extra_options(options: Iterable[str]) -> dict[str, bool]:
     lookup = {
-        "lower": {"lower", "low", "-l", "--lower"},
+        "lower": {"lower", "low", "-l", "--lower", "lw"},
         "no_sep": {"no_sep", "nosep", "-ns", "--no-sep", "no-sep", "ns"},
     }
     result = {"lower": False, "no_sep": False}
@@ -230,7 +259,10 @@ def _write_passwords(path: pathlib.Path, passwords: Iterable[str]) -> None:
     "-t",
     "--type",
     "type_",
-    type=click.Choice(["normal", "strong", "super_strong"], case_sensitive=False),
+    type=click.Choice(
+        ["normal", "strong", "super_strong"], 
+        case_sensitive=False
+    ),
     default=None,
     help="Password profile: normal, strong, or super_strong.",
 )
@@ -243,6 +275,14 @@ def _write_passwords(path: pathlib.Path, passwords: Iterable[str]) -> None:
 )
 @click.option("-ns", "--no-sep", "no_sep", is_flag=True, help="Remove separators from the result.")
 @click.option("-low", "--lower", is_flag=True, help="Convert generated passwords to lowercase.")
+@click.option(
+    "-s",
+    "--separator",
+    "new_separator",
+    type=str,
+    default=None,
+    help="Use a custom separator character instead of '-' and '_'.",
+)
 @click.option(
     "-o",
     "--output",
@@ -273,6 +313,9 @@ def main(
         extra = _parse_extra_options(view.ask_for_options())
         lower = extra["lower"]
         no_sep = extra["no_sep"]
+        chosen_sep = view.ask_for_separator()
+        if chosen_sep:
+            new_separator = chosen_sep
         chosen_output = view.ask_for_output_path()
         if chosen_output:
             output = pathlib.Path(chosen_output).expanduser().resolve()
@@ -281,12 +324,18 @@ def main(
     type_ = "normal" if type_ is None else type_.lower()
     number = 1 if number is None else number
 
+    if new_separator is not None:
+        new_separator = new_separator.strip()
+        if len(new_separator) != 1 or new_separator.isspace():
+            raise click.BadParameter("Separator must be exactly one non-space character.", param_hint="--separator")
+
     passwords = generator.generate_batch(
         length=length,
         type=type_,
         count=number,
         lower=lower,
         no_separator=no_sep,
+        new_separator=new_separator,
     )
 
     if output:

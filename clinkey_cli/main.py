@@ -10,7 +10,7 @@ from typing import Callable, Dict
 class Clinkey:
     """Generate pronounceable passwords with different complexity presets."""
 
-    def __init__(self, new_separator: str = None) -> None:
+    def __init__(self) -> None:
         alphabet = string.ascii_uppercase
         vowels = "AEIOUY"
         self._consonants = [char for char in alphabet if char not in vowels]
@@ -28,78 +28,111 @@ class Clinkey:
             "TRI",
             "TRO",
             "TRA",
+            "TRU",
+            "TSA",
+            "TSE",
+            "TSI",
+            "TSO",
+            "TSU",
             "DRE",
             "DRI",
             "DRO",
             "DRA",
+            "DRU",
             "BRE",
             "BRI",
             "BRO",
             "BRA",
+            "BRU",
+            "BLA",
+            "BLE",
+            "BLI",
+            "BLO",
+            "BLU",
             "CRE",
             "CRI",
             "CRO",
             "CRA",
+            "CRU",
+            "CHA",
+            "CHE",
+            "CHI",
+            "CHO",
+            "CHU",
             "FRE",
             "FRI",
             "FRO",
             "FRA",
+            "FRU",
             "GRE",
             "GRI",
             "GRO",
             "GRA",
+            "GRU",
+            "GLA",
+            "GLE",
+            "GLI",
+            "GLO",
+            "GLU",
+            "GNA",
+            "GNE",
+            "GNI",
+            "GNO",
+            "GNU",
             "PRE",
             "PRI",
             "PRO",
             "PRA",
+            "PRU",
+            "PLA",
+            "PLE",
+            "PLI",
+            "PLO",
+            "PLU",
+            "QUA",
+            "QUE",
+            "QUI",
+            "QUO",
             "SRE",
             "SRI",
             "SRO",
             "SRA",
+            "SRU",
+            "SLA",
+            "SLE",
+            "SLI",
+            "SLO",
+            "SLU",
+            "STA",
+            "STE",
+            "STI",
+            "STO",
+            "STU",
+            "SNA",
+            "SNE",
+            "SNI",
+            "SNO",
+            "SNU",
+            "SMA",
+            "SME",
+            "SMI",
+            "SMO",
+            "SMU",
+            "SHA",
+            "SHE",
+            "SHI",
+            "SHO",
+            "SHU",
             "VRE",
             "VRI",
             "VRO",
             "VRA",
+            "VRU",
             "ZRE",
+            "ZRU",
             "ZRI",
             "ZRO",
-            "ZRA",
-            "LON",
-            "LEN",
-            "LIN",
-            "LAN",
-            "MON",
-            "MEN",
-            "MIN",
-            "MAN",
-            "NON",
-            "NEN",
-            "NIN",
-            "NAN",
-            "PON",
-            "PEN",
-            "PIN",
-            "PAN",
-            "RON",
-            "REN",
-            "RIN",
-            "RAN",
-            "SON",
-            "SEN",
-            "SIN",
-            "SAN",
-            "TON",
-            "TEN",
-            "TIN",
-            "TAN",
-            "VON",
-            "VEN",
-            "VIN",
-            "VAN",
-            "ZON",
-            "ZEN",
-            "ZIN",
-            "ZAN",
+            "ZRA"
         ]
 
         self._separators = ["-", "_"]
@@ -108,7 +141,8 @@ class Clinkey:
             "strong": self.strong,
             "super_strong": self.super_strong,
         }
-        self.new_separator = new_separator
+        # Custom separator to override the default ones ('-' and '_') when set
+        self.new_separator = None
 
     def _generate_simple_syllable(self) -> str:
         return random.choice(self._simple_syllables)
@@ -197,11 +231,28 @@ class Clinkey:
             valid = ", ".join(sorted(self._generators.keys()))
             raise ValueError(f"Unsupported type '{type}'. Choose among: {valid}.")
 
-        raw_password = self._fit_to_length(self._generators[key], length)
-        cleaned = raw_password.strip("-_")
+        # Temporarily override separator for this generation if provided
+        previous_separator = self.new_separator
+        if new_separator is not None:
+            self.new_separator = new_separator
+
+        try:
+            raw_password = self._fit_to_length(self._generators[key], length)
+        finally:
+            # Restore previous separator to avoid leaking state between calls
+            self.new_separator = previous_separator
+
+        separators_to_strip = "-_"
+        effective_separator = new_separator if new_separator is not None else previous_separator
+        if effective_separator and effective_separator not in "-_":
+            separators_to_strip += effective_separator
+
+        cleaned = raw_password.strip(separators_to_strip)
 
         if no_separator:
             cleaned = cleaned.replace("-", "").replace("_", "")
+            if effective_separator and effective_separator not in "-_":
+                cleaned = cleaned.replace(effective_separator, "")
 
         if lower:
             cleaned = cleaned.lower()
@@ -222,7 +273,13 @@ class Clinkey:
             raise ValueError("count must be a positive integer")
 
         return [
-            self.generate_password(length=length, type=type, lower=lower, no_separator=no_separator)
+            self.generate_password(
+                length=length,
+                type=type,
+                lower=lower,
+                no_separator=no_separator,
+                new_separator=new_separator,
+            )
             for _ in range(count)
         ]
 
