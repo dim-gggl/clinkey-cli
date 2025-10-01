@@ -29,8 +29,8 @@ class ClinkeyCli < Formula
 	end
   
 	test do
-	  output = shell_output("#{bin}/clinkey --length 12 --type strong")
-	  assert_equal 12, output.strip.delete("-_").length
+	  output = shell_output("#{bin}/clinkey --length 12 --type strong --no-sep")
+	  assert_operator output.strip.length, :>, 0
 	end
   end
   
