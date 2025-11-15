@@ -12,3 +12,7 @@ __pycache__/
 .cursor
 .vscode
 .env
+dist/
+*agent*.md
+*CLAUDE*.md
+.AGENTS
