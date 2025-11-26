@@ -6,6 +6,12 @@ for different password generation strategies.
 
 from clinkey_cli.generators.base import BaseGenerator
 from clinkey_cli.generators.passphrase import PassphraseGenerator
+from clinkey_cli.generators.pattern import PatternGenerator
 from clinkey_cli.generators.syllable import SyllableGenerator
 
-__all__ = ["BaseGenerator", "SyllableGenerator", "PassphraseGenerator"]
+__all__ = [
+    "BaseGenerator",
+    "SyllableGenerator",
+    "PassphraseGenerator",
+    "PatternGenerator",
+]
