@@ -4,7 +4,6 @@ Generates passwords following custom patterns with character class definitions
 like 'Cvvc-9999-Cvvc' for template-based password generation.
 """
 
-import re
 import secrets
 import string
 
@@ -36,7 +35,7 @@ class PatternGenerator(BaseGenerator):
     9
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize pattern generator."""
         # Character sets
         self._consonants = list("bcdfghjklmnpqrstvwxz")
@@ -92,8 +91,9 @@ class PatternGenerator(BaseGenerator):
                 i += 1
                 continue
 
-            # Check if it's a literal character (not alphanumeric uppercase like X, Y, Z)
-            # We accept lowercase letters, digits, and special chars as literals
+            # Check if it's a literal character
+            # (not alphanumeric uppercase like X, Y, Z)
+            # We accept lowercase letters, digits, and special chars
             # But uppercase letters that aren't C, V, L, D, S are invalid
             if char.isupper() and char.isalpha():
                 # Uppercase letter that's not a valid class = invalid
@@ -154,7 +154,8 @@ class PatternGenerator(BaseGenerator):
         Parameters
         ----------
         length : int, default 0
-            Ignored if pattern is provided (kept for BaseGenerator compatibility).
+            Ignored if pattern is provided
+            (kept for BaseGenerator compatibility).
         pattern : str | None, default None
             Pattern template for password generation.
         **kwargs
@@ -201,7 +202,7 @@ class PatternGenerator(BaseGenerator):
             # Custom character set [abc]
             if char == "[":
                 close = pattern.find("]", i)
-                charset = pattern[i + 1 : close]
+                charset = pattern[i + 1:close]
                 result.append(secrets.choice(list(charset)))
                 i = close + 1
                 continue
