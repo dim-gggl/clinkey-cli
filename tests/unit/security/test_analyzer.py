@@ -68,3 +68,56 @@ class TestSecurityAnalyzerIntegration:
         """Test analysis of strong password."""
         result = analyze_password("Tr0ub4dor&3-Xy9Pq2")
         assert result["strength_score"] > 60
+
+
+class TestSecurityAnalyzerFullIntegration:
+    """Test fully integrated security analysis."""
+
+    def test_analyze_includes_dictionary(self):
+        """Test analysis includes dictionary check."""
+        result = analyze_password("password123", check_dictionary=True)
+        assert "dictionary" in result
+        assert "is_common" in result["dictionary"]
+
+    def test_analyze_skip_dictionary(self):
+        """Test analysis can skip dictionary."""
+        result = analyze_password("test", check_dictionary=False)
+        assert result["dictionary"] == {}
+
+    @pytest.mark.asyncio
+    async def test_analyze_includes_breach(self):
+        """Test analysis includes breach check."""
+        from clinkey_cli.security.analyzer import SecurityAnalyzer
+
+        analyzer = SecurityAnalyzer()
+        result = await analyzer.analyze_async(
+            "testpass123", check_breach=True
+        )
+        assert "breach" in result
+        assert "checked" in result["breach"]
+
+    def test_analyze_includes_context(self):
+        """Test analysis includes context analysis."""
+        result = analyze_password("Password123!")
+        assert "context" in result
+        assert "mixing_score" in result["context"]
+
+    def test_analyze_includes_compliance(self):
+        """Test analysis includes compliance validation."""
+        result = analyze_password("MySecurePass123!")
+        assert "compliance" in result
+        assert "overall_compliant" in result["compliance"]
+
+    def test_full_analysis_weak_password(self):
+        """Test full analysis of weak password."""
+        result = analyze_password("password", check_dictionary=True)
+        assert result["strength_score"] < 20
+        assert result["strength_label"] == "Very Weak"
+        assert result["dictionary"]["is_common"] is True
+
+    def test_full_analysis_strong_password(self):
+        """Test full analysis of strong password."""
+        result = analyze_password("Xk9mP2qR7!wT5", check_dictionary=True)
+        assert result["strength_score"] > 70
+        assert result["strength_label"] in ["Strong", "Very Strong"]
+        assert result["dictionary"]["is_common"] is False

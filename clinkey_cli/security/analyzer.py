@@ -2,6 +2,10 @@
 
 from typing import Any
 
+from clinkey_cli.security.breach import analyze_breach
+from clinkey_cli.security.compliance import validate_compliance
+from clinkey_cli.security.context import analyze_context
+from clinkey_cli.security.dictionary import analyze_dictionary
 from clinkey_cli.security.entropy import get_entropy_score
 from clinkey_cli.security.patterns import analyze_patterns
 
@@ -53,21 +57,21 @@ class SecurityAnalyzer:
         # Pattern analysis (optional)
         patterns = analyze_patterns(password) if check_patterns else {}
 
-        # Dictionary analysis (Phase 2 Task 5)
-        dictionary = {} if not check_dictionary else {}
+        # Dictionary analysis (optional)
+        dictionary = analyze_dictionary(password) if check_dictionary else {}
 
-        # Breach check (Phase 2 Task 6)
-        breach = {} if not check_breach else {}
+        # Breach check (async, not supported in sync method)
+        breach = {}
 
-        # Context analysis (Phase 2 Task 7)
-        context = {}
+        # Context analysis (always performed)
+        context = analyze_context(password)
 
-        # Compliance validation (Phase 2 Task 8)
-        compliance = {}
+        # Compliance validation (always performed)
+        compliance = validate_compliance(password)
 
         # Calculate overall strength score
         strength_score = self._calculate_strength_score(
-            entropy, patterns, dictionary, breach
+            entropy, patterns, dictionary, breach, context
         )
 
         # Determine strength label
@@ -75,7 +79,75 @@ class SecurityAnalyzer:
 
         # Generate recommendations
         recommendations = self._generate_recommendations(
-            entropy, patterns, dictionary, breach, strength_score
+            entropy, patterns, dictionary, breach, compliance, strength_score
+        )
+
+        return {
+            "entropy": entropy,
+            "patterns": patterns,
+            "dictionary": dictionary,
+            "breach": breach,
+            "context": context,
+            "compliance": compliance,
+            "strength_score": strength_score,
+            "strength_label": strength_label,
+            "recommendations": recommendations,
+        }
+
+    async def analyze_async(
+        self,
+        password: str,
+        check_breach: bool = False,
+        check_dictionary: bool = True,
+        check_patterns: bool = True,
+    ) -> dict[str, Any]:
+        """Analyze password security (async version with breach check).
+
+        Parameters
+        ----------
+        password : str
+            Password to analyze.
+        check_breach : bool, default False
+            Check against breach databases.
+        check_dictionary : bool, default True
+            Check against common password dictionaries.
+        check_patterns : bool, default True
+            Detect security-weakening patterns.
+
+        Returns
+        -------
+        dict
+            Comprehensive security analysis results.
+        """
+        # Entropy analysis (always performed)
+        entropy = get_entropy_score(password)
+
+        # Pattern analysis (optional)
+        patterns = analyze_patterns(password) if check_patterns else {}
+
+        # Dictionary analysis (optional)
+        dictionary = analyze_dictionary(password) if check_dictionary else {}
+
+        # Breach check (async, optional)
+        breach = await analyze_breach(password) if check_breach else {}
+
+        # Context analysis (always performed)
+        context = analyze_context(password)
+
+        # Compliance validation (always performed)
+        compliance = validate_compliance(password)
+
+        # Calculate overall strength score
+        strength_score = self._calculate_strength_score(
+            entropy, patterns, dictionary, breach, context
+        )
+
+        # Determine strength label
+        strength_label = self._get_strength_label(strength_score)
+
+        # Generate recommendations
+        recommendations = self._generate_recommendations(
+            entropy, patterns, dictionary, breach, compliance, strength_score
         )
 
         return {
@@ -96,6 +168,7 @@ class SecurityAnalyzer:
         patterns: dict,
         dictionary: dict,
         breach: dict,
+        context: dict,
     ) -> int:
         """Calculate overall strength score (0-100).
 
@@ -109,6 +182,8 @@ class SecurityAnalyzer:
             Dictionary analysis results.
         breach : dict
             Breach check results.
+        context : dict
+            Context analysis results.
 
         Returns
         -------
@@ -124,8 +199,22 @@ class SecurityAnalyzer:
             pattern_penalty = patterns.get("entropy_reduction", 0)
             base_score -= pattern_penalty
 
-        # Deduct for dictionary matches (Phase 2 Task 5)
-        # Deduct for breaches (Phase 2 Task 6)
+        # Deduct for dictionary matches
+        if dictionary:
+            dict_penalty = dictionary.get("score_penalty", 0)
+            base_score -= dict_penalty
+
+        # Deduct for breaches
+        if breach:
+            breach_penalty = breach.get("score_penalty", 0)
+            base_score -= breach_penalty
+
+        # Adjust for context mixing
+        if context:
+            mixing_score = context.get("mixing_score", 50)
+            # Boost score slightly for good mixing (max +10)
+            mixing_bonus = max(0, (mixing_score - 60) / 4)
+            base_score += mixing_bonus
 
         # Ensure score is in range [0, 100]
         return max(0, min(100, int(base_score)))
@@ -160,6 +249,7 @@ class SecurityAnalyzer:
         patterns: dict,
         dictionary: dict,
         breach: dict,
+        compliance: dict,
         score: int,
     ) -> list[str]:
         """Generate actionable security recommendations.
@@ -174,6 +264,8 @@ class SecurityAnalyzer:
             Dictionary analysis.
         breach : dict
             Breach check.
+        compliance : dict
+            Compliance validation.
         score : int
             Overall strength score.
 
@@ -183,6 +275,23 @@ class SecurityAnalyzer:
             List of recommendations.
         """
         recommendations = []
+
+        # Breach warning (highest priority)
+        if breach and breach.get("is_breached"):
+            count = breach.get("breach_count", 0)
+            recommendations.append(
+                f"⚠️  PASSWORD COMPROMISED: Found in {count:,} data breaches. Change immediately!"
+            )
+
+        # Dictionary warnings
+        if dictionary and dictionary.get("is_common"):
+            recommendations.append(
+                "Avoid common passwords - use a password generator instead"
+            )
+        elif dictionary and dictionary.get("word_count", 0) > 0:
+            recommendations.append(
+                "Avoid dictionary words in passwords"
+            )
 
         # Length recommendations
         length = entropy.get("length", 0)
@@ -203,11 +312,24 @@ class SecurityAnalyzer:
             )
 
         # Pattern recommendations
-        if patterns:
-            pattern_count = patterns.get("pattern_count", 0)
-            if pattern_count > 0:
+        if patterns and patterns.get("pattern_count", 0) > 0:
+            count = patterns["pattern_count"]
+            recommendations.append(
+                f"Avoid predictable patterns ({count} detected)"
+            )
+
+        # Compliance recommendations
+        if compliance and not compliance.get("overall_compliant"):
+            nist = compliance.get("nist", {})
+            owasp = compliance.get("owasp", {})
+
+            if not nist.get("compliant"):
                 recommendations.append(
-                    f"Avoid predictable patterns ({pattern_count} detected)"
+                    "Does not meet NIST SP 800-63B guidelines"
+                )
+            if not owasp.get("compliant"):
+                recommendations.append(
+                    "Does not meet OWASP password recommendations"
                 )
 
         # Overall score recommendation
