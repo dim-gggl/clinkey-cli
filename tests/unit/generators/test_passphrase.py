@@ -1,7 +1,5 @@
 """Unit tests for passphrase generator."""
 
-import re
-
 import pytest
 
 from clinkey_cli.generators.passphrase import PassphraseGenerator

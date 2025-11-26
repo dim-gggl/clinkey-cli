@@ -25,8 +25,11 @@ _BASE_WORDS = [
     "activity", "actress", "acts", "actual", "actually", "acupuncture",
 ]
 
-# For testing purposes, we'll generate a complete list programmatically
-# In production, include the full EFF large wordlist
+# DEVELOPMENT/TESTING VERSION:
+# This is a partial wordlist for development and testing purposes.
+# Contains a subset of actual EFF words plus generated placeholders.
+# For production use, replace with the complete EFF large wordlist:
+# https://www.eff.org/deeplinks/2016/07/new-wordlists-random-passphrases
 EFF_LARGE_WORDLIST = _BASE_WORDS + [f"word{i:04d}" for i in range(7776 - len(_BASE_WORDS))]
 
 assert len(EFF_LARGE_WORDLIST) == 7776, "EFF wordlist must have exactly 7,776 words"

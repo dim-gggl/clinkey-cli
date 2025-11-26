@@ -5,6 +5,7 @@ from curated wordlists like the EFF large wordlist.
 """
 
 import secrets
+from typing import Any
 
 from clinkey_cli.generators.base import BaseGenerator
 from clinkey_cli.wordlists import EFF_LARGE_WORDLIST
@@ -75,7 +76,7 @@ class PassphraseGenerator(BaseGenerator):
         word_count: int = DEFAULT_WORD_COUNT,
         separator: str = "-",
         capitalize: bool = True,
-        **kwargs,
+        **kwargs: Any,
     ) -> str:
         """Generate a passphrase.
 
