@@ -4,8 +4,8 @@ Checks passwords against lists of common passwords and English dictionary
 words to identify easily guessable passwords.
 """
 
-import re
 from pathlib import Path
+from typing import Any
 
 
 # Load common passwords list
@@ -43,7 +43,7 @@ _COMMON_WORDS = {
 }
 
 
-def check_common_password(password: str) -> dict:
+def check_common_password(password: str) -> dict[str, Any]:
     """Check if password is in common passwords list.
 
     Parameters
@@ -53,8 +53,13 @@ def check_common_password(password: str) -> dict:
 
     Returns
     -------
-    dict
+    dict[str, Any]
         Detection results with is_common flag and matches.
+
+    Raises
+    ------
+    TypeError
+        If password is not a string.
 
     Examples
     --------
@@ -62,6 +67,15 @@ def check_common_password(password: str) -> dict:
     >>> result["is_common"]
     True
     """
+    if not isinstance(password, str):
+        raise TypeError(f"password must be a string, got {type(password).__name__}")
+
+    if not password:
+        return {
+            "is_common": False,
+            "matches": [],
+        }
+
     password_lower = password.lower()
 
     # Direct match
@@ -88,7 +102,7 @@ def check_common_password(password: str) -> dict:
     }
 
 
-def check_dictionary_words(password: str) -> dict:
+def check_dictionary_words(password: str) -> dict[str, Any]:
     """Check for dictionary words in password.
 
     Parameters
@@ -98,8 +112,13 @@ def check_dictionary_words(password: str) -> dict:
 
     Returns
     -------
-    dict
+    dict[str, Any]
         Dictionary words found in password.
+
+    Raises
+    ------
+    TypeError
+        If password is not a string.
 
     Examples
     --------
@@ -107,6 +126,14 @@ def check_dictionary_words(password: str) -> dict:
     >>> len(result["words"]) > 0
     True
     """
+    if not isinstance(password, str):
+        raise TypeError(f"password must be a string, got {type(password).__name__}")
+
+    if not password:
+        return {
+            "words": [],
+        }
+
     password_lower = password.lower()
     found_words = []
 
@@ -124,7 +151,7 @@ def check_dictionary_words(password: str) -> dict:
     }
 
 
-def analyze_dictionary(password: str) -> dict:
+def analyze_dictionary(password: str) -> dict[str, Any]:
     """Comprehensive dictionary analysis.
 
     Parameters
@@ -134,8 +161,13 @@ def analyze_dictionary(password: str) -> dict:
 
     Returns
     -------
-    dict
+    dict[str, Any]
         Dictionary analysis results with penalty score.
+
+    Raises
+    ------
+    TypeError
+        If password is not a string.
 
     Examples
     --------
@@ -145,12 +177,27 @@ def analyze_dictionary(password: str) -> dict:
     >>> result["score_penalty"] >= 50
     True
     """
+    if not isinstance(password, str):
+        raise TypeError(f"password must be a string, got {type(password).__name__}")
+
+    if not password:
+        return {
+            "is_common": False,
+            "common_matches": [],
+            "dictionary_words": [],
+            "word_count": 0,
+            "score_penalty": 0,
+        }
+
     common_check = check_common_password(password)
     word_check = check_dictionary_words(password)
 
     is_common = common_check["is_common"]
     common_matches = common_check["matches"]
     dictionary_words = word_check["words"]
+    # Note: word_count counts common password matches and dictionary words separately.
+    # If a password matches both common password and contains dictionary words,
+    # both are counted to reflect total weakness indicators.
     word_count = len(common_matches) + len(dictionary_words)
 
     # Calculate penalty
