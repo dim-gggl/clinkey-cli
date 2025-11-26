@@ -1,6 +1,17 @@
 """Compliance validation against security standards.
 
 Validates passwords against NIST SP 800-63B and OWASP password guidelines.
+
+Standards Implementation Notes
+------------------------------
+This module implements:
+- NIST SP 800-63B (Revision 3, 2017): Focus on length over complexity
+- OWASP ASVS 4.0 (2019): 3-of-4 complexity rule for backward compatibility
+
+Note: Modern OWASP (2024) guidelines emphasize password length and entropy over
+character composition rules. The 3-of-4 complexity requirement implemented here
+follows OWASP ASVS 4.0 (2019) for compatibility with existing security frameworks.
+For new implementations, consider focusing primarily on length requirements.
 """
 
 from typing import Any
@@ -9,11 +20,16 @@ from typing import Any
 def check_nist_compliance(password: str) -> dict[str, Any]:
     """Check NIST SP 800-63B compliance.
 
+    Implements NIST SP 800-63B (Revision 3, 2017) requirements.
+
     NIST Requirements:
     - Minimum 8 characters
     - Maximum 64+ characters (we allow unlimited)
     - Allow all printable ASCII + Unicode
     - No composition rules (we check but don't require)
+
+    Note: NIST focuses on length over complexity, discouraging arbitrary
+    composition rules in favor of longer passwords.
 
     Parameters
     ----------
@@ -58,9 +74,16 @@ def check_nist_compliance(password: str) -> dict[str, Any]:
 def check_owasp_compliance(password: str) -> dict[str, Any]:
     """Check OWASP password guidelines compliance.
 
+    Implements OWASP ASVS 4.0 (2019) password requirements.
+
     OWASP Requirements:
     - Minimum 10 characters (recommended)
     - At least 3 of 4 character types (uppercase, lowercase, digits, special)
+
+    Note: The 3-of-4 complexity rule comes from OWASP ASVS 4.0 (2019).
+    Modern OWASP (2024) guidelines emphasize length and entropy over
+    composition rules. This implementation maintains backward compatibility
+    with established security frameworks.
 
     Parameters
     ----------

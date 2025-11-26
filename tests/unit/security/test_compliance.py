@@ -29,6 +29,23 @@ class TestNISTCompliance:
         result = check_nist_compliance("Pass123!")
         assert result["compliant"] is True
 
+    def test_nist_exactly_8_chars(self):
+        """Test NIST boundary - exactly 8 characters."""
+        result = check_nist_compliance("12345678")
+        assert result["compliant"] is True
+        assert len(result["violations"]) == 0
+
+    def test_nist_non_string_input(self):
+        """Test NIST raises ValueError for non-string input."""
+        with pytest.raises(ValueError, match="password must be a string"):
+            check_nist_compliance(12345678)
+
+        with pytest.raises(ValueError, match="password must be a string"):
+            check_nist_compliance(None)
+
+        with pytest.raises(ValueError, match="password must be a string"):
+            check_nist_compliance(["password"])
+
 
 class TestOWASPCompliance:
     """Test OWASP compliance."""
@@ -50,6 +67,23 @@ class TestOWASPCompliance:
         result = check_owasp_compliance("Pass123!")
         assert result["compliant"] is False
         assert "min_length" in result["violations"]
+
+    def test_owasp_exactly_10_chars(self):
+        """Test OWASP boundary - exactly 10 characters."""
+        result = check_owasp_compliance("Pass123!@#")
+        assert result["compliant"] is True
+        assert len(result["violations"]) == 0
+
+    def test_owasp_non_string_input(self):
+        """Test OWASP raises ValueError for non-string input."""
+        with pytest.raises(ValueError, match="password must be a string"):
+            check_owasp_compliance(1234567890)
+
+        with pytest.raises(ValueError, match="password must be a string"):
+            check_owasp_compliance(None)
+
+        with pytest.raises(ValueError, match="password must be a string"):
+            check_owasp_compliance({"password": "test"})
 
 
 class TestValidateCompliance:
@@ -74,3 +108,23 @@ class TestValidateCompliance:
         result = validate_compliance("pass")
         assert result["overall_compliant"] is False
         assert result["standards_met"] < 2
+
+    def test_validate_nist_compliant_owasp_noncompliant(self):
+        """Test password that meets NIST but not OWASP standards."""
+        # 9 chars: meets NIST (8+) but not OWASP (10+)
+        result = validate_compliance("Pass123!@")
+        assert result["nist"]["compliant"] is True
+        assert result["owasp"]["compliant"] is False
+        assert result["overall_compliant"] is False
+        assert result["standards_met"] == 1
+
+    def test_validate_non_string_input(self):
+        """Test validate_compliance raises ValueError for non-string input."""
+        with pytest.raises(ValueError, match="password must be a string"):
+            validate_compliance(12345)
+
+        with pytest.raises(ValueError, match="password must be a string"):
+            validate_compliance(None)
+
+        with pytest.raises(ValueError, match="password must be a string"):
+            validate_compliance([])
