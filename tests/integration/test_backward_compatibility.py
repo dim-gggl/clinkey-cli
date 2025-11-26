@@ -5,8 +5,15 @@ compatibility with the 1.x API and behavior.
 """
 
 import re
+
 import pytest
-from clinkey_cli.main import Clinkey, MAX_PASSWORD_LENGTH, MAX_BATCH_SIZE, MIN_PASSWORD_LENGTH
+
+from clinkey_cli.main import (
+    MAX_BATCH_SIZE,
+    MAX_PASSWORD_LENGTH,
+    MIN_PASSWORD_LENGTH,
+    Clinkey,
+)
 
 
 class TestBackwardCompatibleAPI:
@@ -28,18 +35,14 @@ class TestBackwardCompatibleAPI:
             type="normal",
             lower=False,
             no_separator=False,
-            new_separator=None
+            new_separator=None,
         )
         assert isinstance(password, str)
         assert len(password) == 16
 
     def test_generate_batch_signature(self, clinkey):
         """Test generate_batch() method exists."""
-        passwords = clinkey.generate_batch(
-            count=5,
-            length=16,
-            type="normal"
-        )
+        passwords = clinkey.generate_batch(count=5, length=16, type="normal")
         assert isinstance(passwords, list)
         assert len(passwords) == 5
 
@@ -75,7 +78,7 @@ class TestBackwardCompatibleBehavior:
     def test_normal_password_pattern(self, clinkey):
         """Test normal password pattern unchanged."""
         password = clinkey.generate_password(type="normal", length=30)
-        assert re.match(r'^[A-Z\-_]+$', password)
+        assert re.match(r"^[A-Z\-_]+$", password)
 
     def test_strong_password_has_digits(self, clinkey):
         """Test strong password includes digits."""
@@ -90,13 +93,13 @@ class TestBackwardCompatibleBehavior:
     def test_no_separator_flag(self, clinkey):
         """Test no_separator removes separators."""
         password = clinkey.generate_password(no_separator=True, length=20)
-        assert '-' not in password
-        assert '_' not in password
+        assert "-" not in password
+        assert "_" not in password
 
     def test_custom_separator(self, clinkey):
         """Test custom separator via new_separator."""
-        password = clinkey.generate_password(new_separator='@', length=20)
-        assert '@' in password or len(password) < 10
+        password = clinkey.generate_password(new_separator="@", length=20)
+        assert "@" in password or len(password) < 10
 
 
 class TestBackwardCompatibleValidation:

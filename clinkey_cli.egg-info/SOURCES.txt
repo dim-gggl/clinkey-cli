@@ -1,8 +1,11 @@
 LICENSE
 README.md
 pyproject.toml
+setup.py
 clinkey_cli/__init__.py
 clinkey_cli/cli.py
+clinkey_cli/const.py
+clinkey_cli/logos.py
 clinkey_cli/main.py
 clinkey_cli.egg-info/PKG-INFO
 clinkey_cli.egg-info/SOURCES.txt
@@ -10,3 +13,8 @@ clinkey_cli.egg-info/dependency_links.txt
 clinkey_cli.egg-info/entry_points.txt
 clinkey_cli.egg-info/requires.txt
 clinkey_cli.egg-info/top_level.txt
+clinkey_cli/config/__init__.py
+clinkey_cli/config/manager.py
+clinkey_cli/generators/__init__.py
+clinkey_cli/generators/base.py
+clinkey_cli/generators/syllable.py

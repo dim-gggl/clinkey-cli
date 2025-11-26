@@ -68,9 +68,31 @@ class SyllableGenerator(BaseGenerator):
             c + v for c in self._consonants for v in self._vowels
         ]
         self._complex_syllables = [
-            "ch", "sh", "th", "ph", "qu", "tr", "br", "cr", "dr",
-            "fr", "gr", "pr", "st", "bl", "cl", "fl", "gl", "pl",
-            "sl", "sc", "sk", "sm", "sn", "sp", "sw"
+            "ch",
+            "sh",
+            "th",
+            "ph",
+            "qu",
+            "tr",
+            "br",
+            "cr",
+            "dr",
+            "fr",
+            "gr",
+            "pr",
+            "st",
+            "bl",
+            "cl",
+            "fl",
+            "gl",
+            "pl",
+            "sl",
+            "sc",
+            "sk",
+            "sm",
+            "sn",
+            "sp",
+            "sw",
         ]
 
         # Default separators

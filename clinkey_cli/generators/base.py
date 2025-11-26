@@ -101,10 +101,10 @@ class BaseGenerator(ABC):
         # Apply separator transformations first
         if no_separator:
             # Remove common separators
-            result = result.replace('-', '').replace('_', '')
+            result = result.replace("-", "").replace("_", "")
         elif separator is not None:
             # Replace separators with custom character
-            result = result.replace('-', separator).replace('_', separator)
+            result = result.replace("-", separator).replace("_", separator)
 
         # Apply case transformation
         if lower:

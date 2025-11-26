@@ -13,9 +13,9 @@ import string
 from typing import Callable
 
 from clinkey_cli.generators.syllable import (
-    SyllableGenerator,
     MAX_PASSWORD_LENGTH,
     MIN_PASSWORD_LENGTH,
+    SyllableGenerator,
 )
 
 # Re-export constants for backward compatibility
@@ -32,7 +32,7 @@ __all__ = [
 MAX_BATCH_SIZE = 500
 
 # Safe separator characters (printable, non-whitespace)
-SAFE_SEPARATOR_CHARS = string.printable.replace(' \t\n\r\x0b\x0c', '')
+SAFE_SEPARATOR_CHARS = string.printable.replace(" \t\n\r\x0b\x0c", "")
 
 
 class Clinkey:
@@ -152,7 +152,9 @@ class Clinkey:
         """
         return self._generator.super_strong()
 
-    def _fit_to_length(self, generator: Callable[[], str], target_length: int) -> str:
+    def _fit_to_length(
+        self, generator: Callable[[], str], target_length: int
+    ) -> str:
         """Compose a password until the requested length is exactly reached.
 
         Parameters
@@ -185,7 +187,7 @@ class Clinkey:
         lower: bool = False,
         no_separator: bool = False,
         new_separator: str | None = None,
-        output: str | None = None
+        output: str | None = None,
     ) -> str:
         """Generate a single password matching the requested configuration.
 
@@ -230,18 +232,24 @@ class Clinkey:
             raise ValueError(f"length cannot exceed {MAX_PASSWORD_LENGTH}")
 
         # Validate separator if provided
-        separator_to_use = new_separator if new_separator is not None else self.new_separator
+        separator_to_use = (
+            new_separator if new_separator is not None else self.new_separator
+        )
         if separator_to_use is not None:
             if len(separator_to_use) != 1:
                 raise ValueError("separator must be exactly one character")
             if separator_to_use not in SAFE_SEPARATOR_CHARS:
-                raise ValueError("separator must be a safe printable character (no whitespace)")
+                raise ValueError(
+                    "separator must be a safe printable character (no whitespace)"
+                )
 
         # Validate type
         key = type.strip().lower()
         if key not in self._generators:
             valid = ", ".join(sorted(self._generators.keys()))
-            raise ValueError(f"Unsupported type '{type}'. Choose among: {valid}.")
+            raise ValueError(
+                f"Unsupported type '{type}'. Choose among: {valid}."
+            )
 
         # Temporarily override separator for this generation if provided
         previous_separator = self.new_separator
@@ -258,7 +266,9 @@ class Clinkey:
             self._generator._separators = previous_gen_separators
 
         separators_to_strip = "-_"
-        effective_separator = new_separator if new_separator is not None else previous_separator
+        effective_separator = (
+            new_separator if new_separator is not None else previous_separator
+        )
         if effective_separator and effective_separator not in "-_":
             separators_to_strip += effective_separator
 
@@ -282,7 +292,7 @@ class Clinkey:
         lower: bool = False,
         no_separator: bool = False,
         new_separator: str | None = None,
-        output: str | None = None
+        output: str | None = None,
     ) -> list[str]:
         """Generate multiple passwords with the same configuration.
 

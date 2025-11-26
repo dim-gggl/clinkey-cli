@@ -1,7 +1,7 @@
 """Unit tests for base generator abstract class."""
 
 import pytest
-from abc import ABC
+
 from clinkey_cli.generators.base import BaseGenerator
 
 
@@ -15,5 +15,5 @@ class TestBaseGenerator:
 
     def test_base_generator_has_generate_method(self):
         """Test that BaseGenerator defines abstract generate method."""
-        assert hasattr(BaseGenerator, 'generate')
-        assert getattr(BaseGenerator.generate, '__isabstractmethod__', False)
+        assert hasattr(BaseGenerator, "generate")
+        assert getattr(BaseGenerator.generate, "__isabstractmethod__", False)

@@ -3,6 +3,7 @@
 Supports both interactive and scripted launches, pairing Click for argument
 parsing with Rich for terminal rendering.
 """
+
 import pathlib
 from typing import Iterable, Optional
 
@@ -15,9 +16,8 @@ from rich.panel import Panel
 from rich.table import Table
 from rich.text import Text
 
-from clinkey_cli.main import Clinkey
 from clinkey_cli.logos import animate_logo, display_logo
-
+from clinkey_cli.main import Clinkey
 
 console = Console(style="on grey11")
 
@@ -118,7 +118,7 @@ class ClinkeyView:
 
         # Wait for user input (cursor will be at the end of the layout)
         input()
-    
+
     def intro_logo(self) -> None:
         """Display the intro logo animation."""
         self._clear()
@@ -163,7 +163,9 @@ class ClinkeyView:
             end="",
         )
         choice = input().strip()
-        return {"1": "normal", "2": "strong", "3": "super_strong"}.get(choice, "normal")
+        return {"1": "normal", "2": "strong", "3": "super_strong"}.get(
+            choice, "normal"
+        )
 
     def ask_for_length(self) -> int:
         """Prompt for the target password length, falling back to ``16``.
@@ -185,7 +187,9 @@ class ClinkeyView:
             )
         )
         console.print(
-            Align.center(Text.from_markup("(default: 16): ", style="bright_black")),
+            Align.center(
+                Text.from_markup("(default: 16): ", style="bright_black")
+            ),
             end="",
         )
         value = input().strip()
@@ -215,7 +219,9 @@ class ClinkeyView:
             )
         )
         console.print(
-            Align.center(Text.from_markup("(default: 1): ", style="bright_black")),
+            Align.center(
+                Text.from_markup("(default: 1): ", style="bright_black")
+            ),
             end="",
         )
         value = input().strip()
@@ -245,11 +251,11 @@ class ClinkeyView:
             )
         )
         console.print(
-            Align.center(Text.from_markup(
-                "Available: lower, no_sep", 
-                style="bright_black"
+            Align.center(
+                Text.from_markup(
+                    "Available: lower, no_sep", style="bright_black"
                 )
-                )
+            )
         )
         choices = input().strip()
         return choices.split() if choices else []
@@ -297,7 +303,10 @@ class ClinkeyView:
         )
         console.print(
             Align.center(
-                Text.from_markup("Use exactly one non-space character.", style="bright_black")
+                Text.from_markup(
+                    "Use exactly one non-space character.",
+                    style="bright_black",
+                )
             )
         )
         console.print(
@@ -323,11 +332,12 @@ class ClinkeyView:
             Align.center(
                 Panel.fit(
                     Align.center(
-                        Text.from_markup((
-                            "Your Clinkey [bold light_green]PASSWORDS[/] "
-                            "are [bold light_green]READY[/]"
+                        Text.from_markup(
+                            (
+                                "Your Clinkey [bold light_green]PASSWORDS[/] "
+                                "are [bold light_green]READY[/]"
                             ),
-                            style="white"
+                            style="white",
                         )
                     ),
                     padding=(0, 1),
@@ -336,10 +346,18 @@ class ClinkeyView:
                 )
             )
         )
-        table = Table(show_header=False, box=box.ROUNDED, border_style=self._logo_style["accent_color"])
-        table.add_column("password", style=self._logo_style["title_color"], justify="center")
+        table = Table(
+            show_header=False,
+            box=box.ROUNDED,
+            border_style=self._logo_style["accent_color"],
+        )
+        table.add_column(
+            "password", style=self._logo_style["title_color"], justify="center"
+        )
         for password in passwords:
-            table.add_row(Text(password, style="bold light_green", justify="center"))
+            table.add_row(
+                Text(password, style="bold light_green", justify="center")
+            )
         console.print(Align.center(table))
 
         console.print(
@@ -350,6 +368,7 @@ class ClinkeyView:
 
 
 view = ClinkeyView()
+
 
 def _parse_extra_options(options: Iterable[str]) -> dict[str, bool]:
     """Map option tokens collected interactively to CLI flag booleans.
@@ -394,53 +413,72 @@ def _write_passwords(path: pathlib.Path, passwords: Iterable[str]) -> None:
 
 
 @click.command(context_settings={"help_option_names": ["-h", "--help"]})
-@click.option("-l", 
-              "--length", 
-              type=int, 
-              default=None, 
-              help="Password length (default: 16).")
-@click.option("-t",
-              "--type",
-              "type_",
-              type=click.Choice(["normal", "strong", "super_strong"], 
-                                 case_sensitive=False),
-              default=None,
-              help="Password profile: normal, strong, or super_strong.")
-@click.option("-n",
-              "--number",
-              type=int,
-              default=None,
-              help="Number of passwords to generate (default: 1).",)
-@click.option("-ns", 
-              "--no-sep", 
-              "no_sep", 
-              is_flag=True, 
-              help="Remove separators from the result.")
-@click.option("-low", 
-              "--lower", 
-              is_flag=True, 
-              help="Convert generated passwords to lowercase.")
-@click.option("-s",
-              "--separator",
-              "new_separator",
-              type=str,
-              default=None,
-              help="Use a custom separator character instead of '-' and '_'.")
-@click.option("-o",
-              "--output",
-              type=click.Path(dir_okay=False, 
-                              writable=True, 
-                              resolve_path=True, 
-                              path_type=pathlib.Path),
-              default=None,
-              help="Write the result to a file instead of displaying it.")
-def main(length: Optional[int],
-         type_: Optional[str],
-         number: Optional[int],
-         no_sep: bool,
-         lower: bool,
-         new_separator: Optional[str],
-         output: Optional[pathlib.Path]) -> None:
+@click.option(
+    "-l",
+    "--length",
+    type=int,
+    default=None,
+    help="Password length (default: 16).",
+)
+@click.option(
+    "-t",
+    "--type",
+    "type_",
+    type=click.Choice(
+        ["normal", "strong", "super_strong"], case_sensitive=False
+    ),
+    default=None,
+    help="Password profile: normal, strong, or super_strong.",
+)
+@click.option(
+    "-n",
+    "--number",
+    type=int,
+    default=None,
+    help="Number of passwords to generate (default: 1).",
+)
+@click.option(
+    "-ns",
+    "--no-sep",
+    "no_sep",
+    is_flag=True,
+    help="Remove separators from the result.",
+)
+@click.option(
+    "-low",
+    "--lower",
+    is_flag=True,
+    help="Convert generated passwords to lowercase.",
+)
+@click.option(
+    "-s",
+    "--separator",
+    "new_separator",
+    type=str,
+    default=None,
+    help="Use a custom separator character instead of '-' and '_'.",
+)
+@click.option(
+    "-o",
+    "--output",
+    type=click.Path(
+        dir_okay=False,
+        writable=True,
+        resolve_path=True,
+        path_type=pathlib.Path,
+    ),
+    default=None,
+    help="Write the result to a file instead of displaying it.",
+)
+def main(
+    length: Optional[int],
+    type_: Optional[str],
+    number: Optional[int],
+    no_sep: bool,
+    lower: bool,
+    new_separator: Optional[str],
+    output: Optional[pathlib.Path],
+) -> None:
     """Generate secure, pronounceable passwords from the command line.
 
     Parameters
@@ -496,8 +534,8 @@ def main(length: Optional[int],
         new_separator = new_separator.strip()
         if len(new_separator) != 1 or new_separator.isspace():
             raise click.BadParameter(
-                "Separator must be exactly one non-space character.", 
-                param_hint="--separator"
+                "Separator must be exactly one non-space character.",
+                param_hint="--separator",
             )
 
     passwords = generator.generate_batch(

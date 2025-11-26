@@ -4,6 +4,6 @@ Provides TOML-based configuration with sensible defaults and
 environment variable overrides.
 """
 
-from clinkey_cli.config.manager import ConfigManager, DEFAULT_CONFIG
+from clinkey_cli.config.manager import DEFAULT_CONFIG, ConfigManager
 
 __all__ = ["ConfigManager", "DEFAULT_CONFIG"]

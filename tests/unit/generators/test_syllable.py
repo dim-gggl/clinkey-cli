@@ -1,7 +1,9 @@
 """Unit tests for syllable-based password generator."""
 
-import pytest
 import re
+
+import pytest
+
 from clinkey_cli.generators.syllable import SyllableGenerator
 
 
@@ -16,8 +18,8 @@ class TestSyllableGeneratorInit:
     def test_syllable_generator_has_syllables(self):
         """Test that syllable lists are populated."""
         gen = SyllableGenerator()
-        assert hasattr(gen, '_simple_syllables')
-        assert hasattr(gen, '_complex_syllables')
+        assert hasattr(gen, "_simple_syllables")
+        assert hasattr(gen, "_complex_syllables")
         assert len(gen._simple_syllables) > 0
         assert len(gen._complex_syllables) > 0
 
@@ -50,12 +52,12 @@ class TestSyllableGeneratorGenerate:
     def test_generate_normal_type(self, gen):
         """Test normal type generates letters and separators."""
         password = gen.generate(length=30, password_type="normal")
-        assert re.match(r'^[A-Z\-_]+$', password)
+        assert re.match(r"^[A-Z\-_]+$", password)
 
     def test_generate_strong_type(self, gen):
         """Test strong type includes digits."""
         password = gen.generate(length=30, password_type="strong")
-        assert re.match(r'^[A-Z0-9\-_]+$', password)
+        assert re.match(r"^[A-Z0-9\-_]+$", password)
         assert any(c.isdigit() for c in password)
 
     def test_generate_super_strong_type(self, gen):
@@ -72,14 +74,14 @@ class TestSyllableGeneratorGenerate:
     def test_generate_no_separator(self, gen):
         """Test no_separator removes separators."""
         password = gen.generate(length=20, no_separator=True)
-        assert '-' not in password
-        assert '_' not in password
+        assert "-" not in password
+        assert "_" not in password
 
     def test_generate_custom_separator(self, gen):
         """Test custom separator replacement."""
-        password = gen.generate(length=20, separator='@')
+        password = gen.generate(length=20, separator="@")
         # Should contain @ or be too short for separators
-        assert '@' in password or len(password) < 10
+        assert "@" in password or len(password) < 10
 
 
 class TestSyllableGeneratorValidation:

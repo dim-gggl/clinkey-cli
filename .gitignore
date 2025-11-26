@@ -16,3 +16,4 @@ dist/
 *agent*.md
 *CLAUDE*.md
 .AGENTS
+.cursorrules

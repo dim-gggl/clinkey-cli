@@ -1,10 +1,11 @@
-from rich.text import Text
 from time import sleep
-from rich.console import Console, Group
-from rich.align import Align
-from rich.panel import Panel
-from rich.layout import Layout
+
 from rich import box
+from rich.align import Align
+from rich.console import Console, Group
+from rich.layout import Layout
+from rich.panel import Panel
+from rich.text import Text
 
 from clinkey_cli.const import LOGO, LOGOS
 
@@ -83,6 +84,7 @@ def _fullscreen_logo(logo: Text | str) -> Layout:
 
     return layout
 
+
 def rotate_logo(speed: float, fullscreen: bool = False):
     layout = None
     for logo in LOGOS:
@@ -94,6 +96,7 @@ def rotate_logo(speed: float, fullscreen: bool = False):
         sleep(speed)
         console.clear()
 
+
 def reverse_logo(speed: float, fullscreen: bool = False):
     for logo in reversed(LOGOS):
         if fullscreen:
@@ -104,6 +107,7 @@ def reverse_logo(speed: float, fullscreen: bool = False):
         sleep(speed)
         console.clear()
 
+
 def animate_logo(fullscreen: bool = False):
     rotate_logo(0.07, fullscreen)
     rotate_logo(0.08, fullscreen)
@@ -111,6 +115,7 @@ def animate_logo(fullscreen: bool = False):
     reverse_logo(0.09, fullscreen)
     rotate_logo(0.1, fullscreen)
     rotate_logo(0.2, fullscreen)
+
 
 def display_logo(fullscreen: bool = False):
     if fullscreen:
@@ -124,7 +129,3 @@ if __name__ == "__main__":
     animate_logo()
     display_logo()
     input()
-
-
-
-    

@@ -1,9 +1,9 @@
 """Unit tests for configuration manager."""
 
-import pytest
-import tempfile
 import pathlib
-from clinkey_cli.config.manager import ConfigManager, DEFAULT_CONFIG
+import tempfile
+
+from clinkey_cli.config.manager import DEFAULT_CONFIG, ConfigManager
 
 
 class TestConfigManager:

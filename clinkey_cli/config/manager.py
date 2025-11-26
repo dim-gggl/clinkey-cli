@@ -11,7 +11,6 @@ import os
 import pathlib
 from typing import Any
 
-
 # Default configuration structure
 DEFAULT_CONFIG = {
     "general": {
