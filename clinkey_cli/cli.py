@@ -18,6 +18,7 @@ from rich.text import Text
 
 from clinkey_cli.logos import animate_logo, display_logo
 from clinkey_cli.main import Clinkey
+from clinkey_cli.generators import registry
 
 console = Console(style="on grey11")
 
@@ -410,6 +411,97 @@ def _write_passwords(path: pathlib.Path, passwords: Iterable[str]) -> None:
     with path.open("w", encoding="utf-8") as handle:
         for password in passwords:
             handle.write(f"{password}\n")
+
+
+def _generate_passwords(
+    type_: str,
+    length: int,
+    number: int,
+    lower: bool,
+    no_sep: bool,
+    separator: Optional[str],
+    word_count: int,
+    capitalize: bool,
+    pattern: Optional[str],
+) -> list[str]:
+    """Generate passwords using the appropriate generator from registry.
+
+    Parameters
+    ----------
+    type_ : str
+        Generator type (normal, strong, super_strong, passphrase, pattern).
+    length : int
+        Password length (for syllable types).
+    number : int
+        Number of passwords to generate.
+    lower : bool
+        Convert to lowercase (post-generation).
+    no_sep : bool
+        Remove separators (post-generation).
+    separator : str | None
+        Custom separator character.
+    word_count : int
+        Number of words (passphrase only).
+    capitalize : bool
+        Capitalize words (passphrase only).
+    pattern : str | None
+        Pattern template (pattern only, required).
+
+    Returns
+    -------
+    list[str]
+        Generated passwords.
+
+    Raises
+    ------
+    click.BadParameter
+        If pattern type is used without pattern template.
+    """
+    # Get generator class from registry
+    generator_class = registry.get(type_)
+    generator = generator_class()
+
+    # Build kwargs based on generator type
+    if type_ == "passphrase":
+        kwargs = {
+            "word_count": word_count,
+            "separator": separator or "-",
+            "capitalize": capitalize,
+        }
+    elif type_ == "pattern":
+        if not pattern:
+            raise click.BadParameter(
+                "Pattern template required for pattern type. "
+                "Example: --pattern 'Cvvc-9999'",
+                param_hint="--pattern",
+            )
+        kwargs = {"pattern": pattern}
+    else:  # syllable types (normal, strong, super_strong)
+        kwargs = {
+            "length": length,
+            "password_type": type_,
+            "lower": lower,
+            "no_separator": no_sep,
+        }
+        if separator:
+            kwargs["separator"] = separator
+
+    # Generate batch
+    passwords = []
+    for _ in range(number):
+        password = generator.generate(**kwargs)
+
+        # Apply post-generation transformations
+        # Passphrase handles its own casing via capitalize flag
+        if lower and type_ != "passphrase":
+            password = password.lower()
+
+        if no_sep:
+            password = password.replace("-", "").replace("_", "")
+
+        passwords.append(password)
+
+    return passwords
 
 
 @click.command(context_settings={"help_option_names": ["-h", "--help"]})
