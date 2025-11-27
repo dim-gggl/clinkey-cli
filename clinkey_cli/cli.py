@@ -5,6 +5,7 @@ parsing with Rich for terminal rendering.
 """
 
 import pathlib
+import time
 from typing import Iterable, Optional
 
 import click
@@ -19,6 +20,7 @@ from rich.text import Text
 from clinkey_cli.logos import animate_logo, display_logo
 from clinkey_cli.main import Clinkey
 from clinkey_cli.generators import registry
+from clinkey_cli.generators.pattern import PatternGenerator
 
 console = Console(style="on grey11")
 
@@ -308,8 +310,6 @@ class ClinkeyView:
         str
             Valid pattern template string.
         """
-        from clinkey_cli.generators.pattern import PatternGenerator
-
         gen = PatternGenerator()
 
         while True:
@@ -350,8 +350,6 @@ class ClinkeyView:
                     )
                 )
             )
-            import time
-
             time.sleep(1.5)
 
     def ask_for_options(self) -> list[str]:
@@ -548,6 +546,9 @@ def _generate_passwords(
 ) -> list[str]:
     """Generate passwords using the appropriate generator from registry.
 
+    Transformations (lowercase, separator removal/replacement) are handled
+    by the generators themselves, not applied as post-processing.
+
     Parameters
     ----------
     type_ : str
@@ -557,11 +558,11 @@ def _generate_passwords(
     number : int
         Number of passwords to generate.
     lower : bool
-        Convert to lowercase (post-generation).
+        Convert to lowercase (passed to syllable generators).
     no_sep : bool
-        Remove separators (post-generation).
+        Remove separators (passed to syllable generators).
     separator : str | None
-        Custom separator character.
+        Custom separator character (passed to generators).
     word_count : int
         Number of words (passphrase only).
     capitalize : bool
@@ -612,15 +613,6 @@ def _generate_passwords(
     passwords = []
     for _ in range(number):
         password = generator.generate(**kwargs)
-
-        # Apply post-generation transformations
-        # Passphrase handles its own casing via capitalize flag
-        if lower and type_ != "passphrase":
-            password = password.lower()
-
-        if no_sep:
-            password = password.replace("-", "").replace("_", "")
-
         passwords.append(password)
 
     return passwords
@@ -751,12 +743,6 @@ def main(
         If ``new_separator`` is provided but is not exactly one non-space
         character.
     """
-    # NOTE: word_count, capitalize, and pattern parameters will be wired up
-    # in Task 2 when _generate_passwords() helper function is implemented.
-    # For now, they are accepted by CLI but not yet passed to generators.
-
-    generator = Clinkey()
-
     interactive = length is None and type_ is None and number is None
 
     if interactive:
@@ -778,7 +764,10 @@ def main(
                 output = pathlib.Path(chosen_output).expanduser().resolve()
 
         elif type_ == "passphrase":
-            # Passphrase flow
+            # Passphrase flow - initialize syllable-specific variables
+            length = 16  # Not used for passphrase, but needed for _generate_passwords
+            lower = False  # Passphrase handles its own casing
+            no_sep = False  # Passphrase uses separators
             word_count = view.ask_for_word_count()
             chosen_sep = view.ask_for_separator()
             if chosen_sep:
@@ -790,7 +779,10 @@ def main(
                 output = pathlib.Path(chosen_output).expanduser().resolve()
 
         elif type_ == "pattern":
-            # Pattern flow
+            # Pattern flow - initialize syllable-specific variables
+            length = 16  # Not used for pattern, but needed for _generate_passwords
+            lower = False  # Not used for pattern
+            no_sep = False  # Not used for pattern
             pattern = view.ask_for_pattern()
             number = view.ask_for_number()
             chosen_output = view.ask_for_output_path()
@@ -809,13 +801,16 @@ def main(
                 param_hint="--separator",
             )
 
-    passwords = generator.generate_batch(
+    passwords = _generate_passwords(
+        type_=type_,
         length=length,
-        type=type_,
-        count=number,
+        number=number,
         lower=lower,
-        no_separator=no_sep,
-        new_separator=new_separator,
+        no_sep=no_sep,
+        separator=new_separator,
+        word_count=word_count,
+        capitalize=capitalize,
+        pattern=pattern,
     )
 
     if output:
