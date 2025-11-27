@@ -150,23 +150,29 @@ class ClinkeyView:
         choices = Text.from_markup(
             "1 - [bold orchid1]Vanilla[/] (letters only)\n"
             "2 - [bold orchid1]Twisted[/] (letters and digits)\n"
-            "3 - [bold orchid1]So NAAASTY[/] (letters, digits, symbols)",
+            "3 - [bold orchid1]So NAAASTY[/] (letters, digits, symbols)\n"
+            "4 - [bold orchid1]Corporate[/] (memorable word-based passphrase)\n"
+            "5 - [bold orchid1]Custom[/] (pattern-based template)",
             style="white",
         )
         console.print(Align.center(choices))
         console.print(
             Align.center(
                 Text.from_markup(
-                    "Choose your [bold light_green]TRIBE[/] (1 / 2 / 3): ",
+                    "Choose your [bold light_green]TRIBE[/] (1 / 2 / 3 / 4 / 5): ",
                     style="bright_black",
                 )
             ),
             end="",
         )
         choice = input().strip()
-        return {"1": "normal", "2": "strong", "3": "super_strong"}.get(
-            choice, "normal"
-        )
+        return {
+            "1": "normal",
+            "2": "strong",
+            "3": "super_strong",
+            "4": "passphrase",
+            "5": "pattern",
+        }.get(choice, "normal")
 
     def ask_for_length(self) -> int:
         """Prompt for the target password length, falling back to ``16``.
@@ -231,6 +237,122 @@ class ClinkeyView:
             return count if count > 0 else 1
         except ValueError:
             return 1
+
+    def ask_for_word_count(self) -> int:
+        """Prompt for word count in passphrase (3-10, default 4).
+
+        Returns
+        -------
+        int
+            Word count between 3 and 10; returns 4 if invalid input.
+        """
+        self._clear()
+        console.print(Align.center(self._logo_panel()))
+        console.print(
+            Align.center(
+                Text.from_markup(
+                    "How many [bold light_green]WORDS[/] do you want?",
+                    style="white",
+                )
+            )
+        )
+        console.print(
+            Align.center(
+                Text.from_markup(
+                    "(3-10, default: 4): ", style="bright_black"
+                )
+            ),
+            end="",
+        )
+        value = input().strip()
+        try:
+            count = int(value)
+            if 3 <= count <= 10:
+                return count
+            return 4
+        except ValueError:
+            return 4
+
+    def ask_for_capitalize(self) -> bool:
+        """Prompt whether to capitalize words in passphrase.
+
+        Returns
+        -------
+        bool
+            True to capitalize, False otherwise; defaults to True.
+        """
+        self._clear()
+        console.print(Align.center(self._logo_panel()))
+        console.print(
+            Align.center(
+                Text.from_markup(
+                    "[bold light_green]Capitalize[/] first letter of each word?",
+                    style="white",
+                )
+            )
+        )
+        console.print(
+            Align.center(
+                Text.from_markup("(Y/n, default: Y): ", style="bright_black")
+            ),
+            end="",
+        )
+        value = input().strip().lower()
+        return value != "n"
+
+    def ask_for_pattern(self) -> str:
+        """Prompt for pattern template with validation.
+
+        Returns
+        -------
+        str
+            Valid pattern template string.
+        """
+        from clinkey_cli.generators.pattern import PatternGenerator
+
+        gen = PatternGenerator()
+
+        while True:
+            self._clear()
+            console.print(Align.center(self._logo_panel()))
+            console.print(
+                Align.center(
+                    Text.from_markup(
+                        "Enter your [bold light_green]PATTERN[/] template:",
+                        style="white",
+                    )
+                )
+            )
+            console.print(
+                Align.center(
+                    Text.from_markup(
+                        "Examples: Cvvc-9999, LLLL-DDDD, CVCVCV",
+                        style="bright_black",
+                    )
+                )
+            )
+            console.print(
+                Align.center(
+                    Text.from_markup("Pattern: ", style="bright_black")
+                ),
+                end="",
+            )
+            pattern = input().strip()
+
+            if pattern and gen.validate_pattern(pattern):
+                return pattern
+
+            console.print(
+                Align.center(
+                    Text.from_markup(
+                        "[bold red]Invalid pattern! Try again.[/]",
+                        style="white",
+                    )
+                )
+            )
+            import time
+
+            time.sleep(1.5)
 
     def ask_for_options(self) -> list[str]:
         """Prompt for extra option keywords such as ``lower`` or ``no_sep``.
@@ -639,18 +761,41 @@ def main(
 
     if interactive:
         view.display_logo()
-        length = view.ask_for_length()
         type_ = view.ask_for_type()
-        number = view.ask_for_number()
-        extra = _parse_extra_options(view.ask_for_options())
-        lower = extra["lower"]
-        no_sep = extra["no_sep"]
-        chosen_sep = view.ask_for_separator()
-        if chosen_sep:
-            new_separator = chosen_sep
-        chosen_output = view.ask_for_output_path()
-        if chosen_output:
-            output = pathlib.Path(chosen_output).expanduser().resolve()
+
+        if type_ in ["normal", "strong", "super_strong"]:
+            # Existing syllable flow
+            length = view.ask_for_length()
+            number = view.ask_for_number()
+            extra = _parse_extra_options(view.ask_for_options())
+            lower = extra["lower"]
+            no_sep = extra["no_sep"]
+            chosen_sep = view.ask_for_separator()
+            if chosen_sep:
+                new_separator = chosen_sep
+            chosen_output = view.ask_for_output_path()
+            if chosen_output:
+                output = pathlib.Path(chosen_output).expanduser().resolve()
+
+        elif type_ == "passphrase":
+            # Passphrase flow
+            word_count = view.ask_for_word_count()
+            chosen_sep = view.ask_for_separator()
+            if chosen_sep:
+                new_separator = chosen_sep
+            capitalize = view.ask_for_capitalize()
+            number = view.ask_for_number()
+            chosen_output = view.ask_for_output_path()
+            if chosen_output:
+                output = pathlib.Path(chosen_output).expanduser().resolve()
+
+        elif type_ == "pattern":
+            # Pattern flow
+            pattern = view.ask_for_pattern()
+            number = view.ask_for_number()
+            chosen_output = view.ask_for_output_path()
+            if chosen_output:
+                output = pathlib.Path(chosen_output).expanduser().resolve()
 
     length = 16 if not length else length
     type_ = "normal" if not type_ else type_.lower()
