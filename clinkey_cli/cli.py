@@ -425,10 +425,11 @@ def _write_passwords(path: pathlib.Path, passwords: Iterable[str]) -> None:
     "--type",
     "type_",
     type=click.Choice(
-        ["normal", "strong", "super_strong"], case_sensitive=False
+        ["normal", "strong", "super_strong", "passphrase", "pattern"],
+        case_sensitive=False
     ),
     default=None,
-    help="Password profile: normal, strong, or super_strong.",
+    help="Password type: normal, strong, super_strong, passphrase, or pattern.",
 )
 @click.option(
     "-n",
@@ -470,6 +471,23 @@ def _write_passwords(path: pathlib.Path, passwords: Iterable[str]) -> None:
     default=None,
     help="Write the result to a file instead of displaying it.",
 )
+@click.option(
+    "--word-count",
+    type=click.IntRange(3, 10),
+    default=4,
+    help="Number of words in passphrase (passphrase type only).",
+)
+@click.option(
+    "--capitalize/--no-capitalize",
+    default=True,
+    help="Capitalize first letter of each word (passphrase type only).",
+)
+@click.option(
+    "--pattern",
+    type=str,
+    default=None,
+    help="Pattern template for password generation (required for pattern type).",
+)
 def main(
     length: Optional[int],
     type_: Optional[str],
@@ -478,6 +496,9 @@ def main(
     lower: bool,
     new_separator: Optional[str],
     output: Optional[pathlib.Path],
+    word_count: int,
+    capitalize: bool,
+    pattern: Optional[str],
 ) -> None:
     """Generate secure, pronounceable passwords from the command line.
 
@@ -499,6 +520,15 @@ def main(
     output : pathlib.Path | None
         Path where passwords should be saved. When ``None``, display them to
         stdout or via the interactive view.
+    word_count : int
+        Number of words for passphrase generation. Defaults to 4.
+        Only applies when ``type_`` is ``"passphrase"``.
+    capitalize : bool
+        Whether to capitalize first letter of each word in passphrase.
+        Defaults to ``True``. Only applies when ``type_`` is ``"passphrase"``.
+    pattern : str | None
+        Pattern template for pattern-based generation. Required when
+        ``type_`` is ``"pattern"``. Example: ``"Cvvc-9999-Cvvc"``.
 
     Raises
     ------
