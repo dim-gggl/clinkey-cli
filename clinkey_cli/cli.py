@@ -507,8 +507,9 @@ def main(
     length : int | None
         Desired password length. When ``None``, prompt the user interactively.
     type_ : str | None
-        Password profile to use. Supported values: ``"normal"``, ``"strong"``,
-        ``"super_strong"``. When ``None``, prompt the user interactively.
+        Password type to use. Supported values: ``"normal"``, ``"strong"``,
+        ``"super_strong"``, ``"passphrase"``, ``"pattern"``. When ``None``,
+        prompt the user interactively.
     number : int | None
         Number of passwords to output. Defaults to ``1`` if left ``None``.
     no_sep : bool
@@ -536,6 +537,9 @@ def main(
         If ``new_separator`` is provided but is not exactly one non-space
         character.
     """
+    # NOTE: word_count, capitalize, and pattern parameters will be wired up
+    # in Task 2 when _generate_passwords() helper function is implemented.
+    # For now, they are accepted by CLI but not yet passed to generators.
 
     generator = Clinkey()
 
