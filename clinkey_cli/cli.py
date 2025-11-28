@@ -8,7 +8,7 @@ import pathlib
 import time
 from typing import Iterable, Optional
 
-import click
+from clinkey_cli.settings import click
 from rich import box
 from rich.align import Align
 from rich.console import Console, Group
@@ -16,13 +16,16 @@ from rich.layout import Layout
 from rich.panel import Panel
 from rich.table import Table
 from rich.text import Text
+from rich.live import Live
+from rich.prompt import Prompt
 
 from clinkey_cli.logos import animate_logo, display_logo
+from clinkey_cli.const import centered_spinner
 from clinkey_cli.main import Clinkey
 from clinkey_cli.generators import registry
 from clinkey_cli.generators.pattern import PatternGenerator
 
-console = Console(style="on grey11")
+console = Console()
 
 
 class ClinkeyView:
@@ -74,14 +77,11 @@ class ClinkeyView:
         """
         logo = Text(
             r"""
-              |   |              |     \        |    |      /     _____|     \        /
-         _____|   |      __    __|      \       |    |     /     |            \      /
-        |         |           |          \      |    |    /      |             \    /
-        |         |           |       |   \     |        /        __|              /
-        |         |           |       |    \    |        \       |                |
-        |         |           |       |         |    |    \      |                |
-              |        |         |    |         |    |     \           |          |
-       _______| _______| ________| ___|     ____| ___|   ___\  ________|      ____|       
+   ___|  |     _ _|   \  |  |  /  ____| \ \   / 
+  |      |       |     \ |  ' /   __|    \   /  
+  |      |       |   |\  |  . \   |         |   
+ \____| _____| ___| _| \_| _|\_\ _____|    _|   
+                                                
              """,
             style=self._logo_style["title_color"],
         )
@@ -93,11 +93,9 @@ class ClinkeyView:
         )
 
     def fullscreen_logo(self):
-        animate_logo(fullscreen=True)
         display_logo(fullscreen=True)
 
     def simple_logo(self):
-        animate_logo()
         display_logo()
 
     def display_logo(self) -> None:
@@ -125,9 +123,9 @@ class ClinkeyView:
     def intro_logo(self) -> None:
         """Display the intro logo animation."""
         self._clear()
-        animate_logo()
         display_logo()
-        input()
+        with Live(centered_spinner(), refresh_per_second=20, transient=True) as live:
+            time.sleep(4)
 
     def ask_for_type(self) -> str:
         """Prompt the user for a password profile and return its slug.
@@ -158,16 +156,7 @@ class ClinkeyView:
             style="white",
         )
         console.print(Align.center(choices))
-        console.print(
-            Align.center(
-                Text.from_markup(
-                    "Choose your [bold light_green]TRIBE[/] (1 / 2 / 3 / 4 / 5): ",
-                    style="bright_black",
-                )
-            ),
-            end="",
-        )
-        choice = input().strip()
+        choice = Prompt.ask("Choose your [bold light_green]TRIBE[/]: > ", choices=["1", "2", "3", "4", "5"])
         return {
             "1": "normal",
             "2": "strong",
@@ -439,7 +428,7 @@ class ClinkeyView:
             return None
         return value[0]
 
-    def display_passwords(self, passwords: Iterable[str]) -> None:
+    def display_passwords(self, passwords: Iterable[str], interactive: bool = False) -> None:
         """Render generated passwords in a Rich table for easy copying.
 
         Parameters
@@ -447,26 +436,27 @@ class ClinkeyView:
         passwords : Iterable[str]
             Collection of passwords to render.
         """
-        self._clear()
-        console.print(Align.center(self._logo_panel()))
-        console.print(
-            Align.center(
-                Panel.fit(
-                    Align.center(
-                        Text.from_markup(
-                            (
-                                "Your Clinkey [bold light_green]PASSWORDS[/] "
-                                "are [bold light_green]READY[/]"
-                            ),
-                            style="white",
-                        )
-                    ),
-                    padding=(0, 1),
-                    box=box.ROUNDED,
-                    border_style=self._logo_style["accent_color"],
+        if interactive:
+            self._clear()
+            console.print(Align.center(self._logo_panel()))
+            console.print(
+                Align.center(
+                    Panel.fit(
+                        Align.center(
+                            Text.from_markup(
+                                (
+                                    "Your Clinkey [bold light_green]PASSWORDS[/] "
+                                    "are [bold light_green]READY[/]"
+                                ),
+                                style="white",
+                            )
+                        ),
+                        padding=(0, 1),
+                        box=box.ROUNDED,
+                        border_style=self._logo_style["accent_color"],
+                    )
                 )
             )
-        )
         table = Table(
             show_header=False,
             box=box.ROUNDED,
@@ -551,22 +541,31 @@ def _generate_passwords(
 
     Parameters
     ----------
+
     type_ : str
         Generator type (normal, strong, super_strong, passphrase, pattern).
+
     length : int
         Password length (for syllable types).
+
     number : int
         Number of passwords to generate.
+
     lower : bool
         Convert to lowercase (passed to syllable generators).
+
     no_sep : bool
         Remove separators (passed to syllable generators).
+
     separator : str | None
         Custom separator character (passed to generators).
+
     word_count : int
         Number of words (passphrase only).
+
     capitalize : bool
         Capitalize words (passphrase only).
+
     pattern : str | None
         Pattern template (pattern only, required).
 
@@ -746,7 +745,7 @@ def main(
     interactive = length is None and type_ is None and number is None
 
     if interactive:
-        view.display_logo()
+        view.intro_logo()
         type_ = view.ask_for_type()
 
         if type_ in ["normal", "strong", "super_strong"]:
@@ -790,7 +789,7 @@ def main(
                 output = pathlib.Path(chosen_output).expanduser().resolve()
 
     length = 16 if not length else length
-    type_ = "normal" if not type_ else type_.lower()
+    type_ = "normal" if not type_ else type_
     number = 1 if not number else number
 
     if new_separator:
@@ -816,11 +815,8 @@ def main(
     if output:
         _write_passwords(output, passwords)
         click.echo(f"Passwords saved to {output}")
-    elif interactive:
-        view.display_passwords(passwords)
     else:
-        for password in passwords:
-            click.echo(password)
+        view.display_passwords(passwords, interactive=interactive)
 
 
 if __name__ == "__main__":  # pragma: no cover

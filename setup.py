@@ -12,5 +12,6 @@ setup(
     install_requires=[
         'click>=8.3.0',
         'rich>=14.1.0',
+        'rich-click>=1.9.4',
     ],
 )

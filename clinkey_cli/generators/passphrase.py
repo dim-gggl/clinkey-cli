@@ -123,9 +123,11 @@ class PassphraseGenerator(BaseGenerator):
         # Select random words
         words = [secrets.choice(self._wordlist) for _ in range(word_count)]
 
-        # Apply capitalization
+        # Apply capitalization (or enforce lowercase when disabled)
         if capitalize:
             words = [word.capitalize() for word in words]
+        else:
+            words = [word.lower() for word in words]
 
         # Join with separator
         return separator.join(words)

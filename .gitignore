@@ -17,3 +17,6 @@ dist/
 *CLAUDE*.md
 .AGENTS
 .cursorrules
+.claude
+.coverage
+.pre-commit*.*

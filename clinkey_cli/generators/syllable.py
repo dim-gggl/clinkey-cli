@@ -61,48 +61,45 @@ class SyllableGenerator(BaseGenerator):
         self._consonants = list("bcdfghjklmnpqrstvwxz")
         self._vowels = list("aeiouy")
         self._digits = list(string.digits)
-        self._specials = list("!@#$%^&*()-_=+[]{}|;:,.<>?")
+        self._specials = list("!@#$%^€£-_;:,.?")
 
         # Build syllable sets
         self._simple_syllables = [
             c + v for c in self._consonants for v in self._vowels
         ]
         self._complex_syllables = [
-            "ch",
-            "sh",
-            "th",
-            "ph",
-            "qu",
-            "tr",
-            "br",
-            "cr",
-            "dr",
-            "fr",
-            "gr",
-            "pr",
-            "st",
-            "bl",
-            "cl",
-            "fl",
-            "gl",
-            "pl",
-            "sl",
-            "sc",
-            "sk",
-            "sm",
-            "sn",
-            "sp",
-            "sw",
+            "TRE", "TRI", "TRO", "TRA", "TRU", "TRY", "TSA", "TSE",
+            "TSI", "TSO", "TSU", "TSY", "DRE", "DRI", "DRO", "DRA",
+            "DRU", "DRY", "BRE", "BRI", "BRO", "BRA", "BRU", "BRY",
+            "BLA", "BLE", "BLI", "BLO", "BLU", "BLY", "CRE", "CRI",
+            "CRO", "CRA", "CRU", "CRY", "CHA", "CHE", "CHI", "CHO",
+            "CHU", "CHY", "FRE", "FRI", "FRO", "FRA", "FRY", "FLA",
+            "FLE", "FLI", "FLO", "FLU", "FLY", "GRE", "GRI", "GRO",
+            "GRA", "GRU", "GRY", "GLA", "GLE", "GLI", "GLO", "GLU",
+            "GLY", "GNA", "GNE", "GNI", "GNO", "GNU", "GNY", "PRE",
+            "PRI", "PRO", "PRA", "PRU", "PRY", "PLA", "PLE", "PLI",
+            "PLO", "PLU", "PLY", "QUA", "QUE", "QUI", "QUO", "QUY",
+            "SRE", "SRI", "SRO", "SRA", "SRU", "SRY", "SLA", "SLE",
+            "SLI", "SLO", "SLU", "SLY", "STA", "STE", "STI", "STO",
+            "STU", "STY", "SNA", "SNE", "SNI", "SNO", "SNU", "SNY",
+            "SMA", "SME", "SMI", "SMO", "SMU", "SMY", "SHA", "SHE",
+            "SHI", "SHO", "SHU", "SHY", "SPY", "SPA", "SPE", "SPI",
+            "SPO", "SPU", "VRE", "VRI", "VRO", "VRA", "VRU", "VRY",
+            "VLA", "VLE", "VLI", "VLO", "VLU", "VLY", "VNA", "VNE",
+            "VNI", "VNO", "VNU", "VNY", "VHA", "VHE", "VHI", "VHO",
+            "VHU", "VHY", "VJA", "VJE", "VJI", "VJO", "VJU", "VJY",
+            "WHA", "WHE", "WHI", "WHO", "WHU", "ZRE", "ZRU", "ZRI",
+            "ZRO", "ZRA"
         ]
 
         # Default separators
-        self._separators = ["-", "_"]
+        self._separators = ["-"]
 
         # Generator method mapping
-        self._generators: dict[str, Callable[[], str]] = {
-            "normal": self._normal,
-            "strong": self._strong,
-            "super_strong": self._super_strong,
+        self._generators: dict[str, Callable[[], list[str]]] = {
+            "normal": self._normal_words,
+            "strong": self._strong_words,
+            "super_strong": self._super_strong_words,
         }
 
     def generate(
@@ -158,7 +155,14 @@ class SyllableGenerator(BaseGenerator):
 
         # Generate base password
         generator = self._generators[password_type]
-        password = generator()
+        separator_to_use = secrets.choice(self._separators)
+        words = generator()
+
+        # Extend with new unique words instead of repeating patterns to reach
+        # the desired length safely.
+        words = self._extend_words_to_length(words, length, separator_to_use)
+
+        password = self._join_words(words, separator_to_use)
 
         # Fit to target length
         password = self.fit_to_length(password, length)
@@ -168,86 +172,122 @@ class SyllableGenerator(BaseGenerator):
 
         return password
 
-    def _normal(self) -> str:
-        """Generate normal password: letters and separators only.
+    def _random_word_lengths(self) -> list[int]:
+        """Pick random syllable counts for the four words.
 
-        Returns
-        -------
-        str
-            Password with syllables and separators.
+        Guarantees at least one word uses multiple CV pairs so we never fall
+        back to a CV-CV-CV-CV-CV pattern.
         """
-        chunks = []
-        for _ in range(10):  # Generate enough chunks
-            # Randomly choose simple or complex syllable
-            if secrets.randbelow(2) == 0:
-                chunks.append(secrets.choice(self._simple_syllables).upper())
-            else:
-                chunks.append(secrets.choice(self._complex_syllables).upper())
 
-            # Add separator
-            chunks.append(secrets.choice(self._separators))
+        while True:
+            lengths = [secrets.choice((1, 2, 3, 4)) for _ in range(4)]
 
-        return "".join(chunks)
+            # Avoid devolving into uniform or overly short words. We want
+            # mostly multi-syllable words with at least one 3–4 syllable word
+            # and at most one single-syllable segment.
+            if lengths.count(1) > 1:
+                continue
+            if max(lengths) < 3:
+                continue
+            if len(set(lengths)) == 1:
+                continue
+            if sum(1 for length in lengths if length >= 2) < 3:
+                continue
 
-    def _strong(self) -> str:
-        """Generate strong password: letters, digits, and separators.
+            return lengths
 
-        Returns
-        -------
-        str
-            Password with syllables, digits, and separators.
-        """
-        chunks = []
-        for i in range(10):
-            # Syllable
-            if secrets.randbelow(2) == 0:
-                chunks.append(secrets.choice(self._simple_syllables).upper())
-            else:
-                chunks.append(secrets.choice(self._complex_syllables).upper())
+    def _generate_word(self, syllable_count: int) -> str:
+        """Generate a word with random selection of simple/complex syllables."""
 
-            # Occasionally add digit block
-            if i % 2 == 0:
-                digit_block = "".join(
-                    secrets.choice(self._digits) for _ in range(2)
-                )
-                chunks.append(digit_block)
+        syllables = []
+        # Combine pools of syllables
+        # simple: ~120 combinations (consonant + vowel)
+        # complex: ~170 combinations (clusters)
+        all_syllables = self._simple_syllables + self._complex_syllables
 
-            # Add separator
-            chunks.append(secrets.choice(self._separators))
+        for _ in range(syllable_count):
+            syllable = secrets.choice(all_syllables)
+            syllables.append(syllable)
 
-        return "".join(chunks)
+        return "".join(syllables).upper()
 
-    def _super_strong(self) -> str:
-        """Generate super strong password: letters, digits, specials, separators.
+    def _build_word_list(self) -> list[str]:
+        """Create the four-word base used by all variants."""
 
-        Returns
-        -------
-        str
-            Password with all character types.
-        """
-        chunks = []
-        for i in range(12):
-            # Syllable
-            if secrets.randbelow(2) == 0:
-                chunks.append(secrets.choice(self._simple_syllables).upper())
-            else:
-                chunks.append(secrets.choice(self._complex_syllables).upper())
+        words: list[str] = []
+        seen: set[str] = set()
 
-            # Add digit block
-            if i % 2 == 0:
-                digit_block = "".join(
-                    secrets.choice(self._digits) for _ in range(2)
-                )
-                chunks.append(digit_block)
+        for count in self._random_word_lengths():
+            word = self._generate_word(count)
+            while word in seen:
+                word = self._generate_word(count)
+            seen.add(word)
+            words.append(word)
 
-            # Add special character
-            if i % 3 == 0:
-                chunks.append(secrets.choice(self._specials))
+        return words
 
-            # Add separator
-            chunks.append(secrets.choice(self._separators))
+    def _letters_only(self, word: str) -> str:
+        """Strip non-letters for uniqueness checks."""
 
-        return "".join(chunks)
+        return "".join(ch for ch in word if ch.isalpha())
+
+    def _generate_unique_word(self, seen: set[str]) -> str:
+        """Generate a new word that does not duplicate prior words."""
+
+        while True:
+            count = secrets.choice((1, 2, 3, 4))
+            candidate = self._generate_word(count)
+            if self._letters_only(candidate) not in seen:
+                return candidate
+
+    def _extend_words_to_length(
+        self, words: list[str], target_length: int, separator: str
+    ) -> list[str]:
+        """Extend word list with new unique words until assembled length fits."""
+
+        seen_letters = {self._letters_only(w) for w in words}
+
+        while len(separator.join(words)) < target_length:
+            new_word = self._generate_unique_word(seen_letters)
+            words.append(new_word)
+            seen_letters.add(self._letters_only(new_word))
+
+        return words
+
+    def _join_words(self, words: list[str], separator: str | None = None) -> str:
+        """Join words with a consistent separator."""
+
+        return (separator or secrets.choice(self._separators)).join(words)
+
+    def _normal_words(self) -> list[str]:
+        """Generate normal password words: letters and separators only."""
+
+        return self._build_word_list()
+
+    def _strong_words(self) -> list[str]:
+        """Generate strong password words: letters, digits, and separators."""
+
+        words = self._build_word_list()
+        digit_block = "".join(secrets.choice(self._digits) for _ in range(2))
+
+        # Prefix digits to the first word so they survive truncation
+        words[0] = digit_block + words[0]
+
+        return words
+
+    def _super_strong_words(self) -> list[str]:
+        """Generate super strong password words: letters, digits, specials, separators."""
+
+        words = self._build_word_list()
+        digit_block = "".join(secrets.choice(self._digits) for _ in range(2))
+        special_char = secrets.choice(self._specials)
+
+        # Place digits and special characters at the start of early words to
+        # avoid losing them when trimming to the requested length.
+        words[0] = digit_block + words[0]
+        words[1 % len(words)] = special_char + words[1 % len(words)]
+
+        return words
 
     # Backward compatibility methods (called by Clinkey adapter)
     def normal(self) -> str:
@@ -258,7 +298,7 @@ class SyllableGenerator(BaseGenerator):
         str
             Normal password.
         """
-        return self._normal()
+        return self._join_words(self._normal_words())
 
     def strong(self) -> str:
         """Generate strong password (backward compatibility).
@@ -268,7 +308,7 @@ class SyllableGenerator(BaseGenerator):
         str
             Strong password.
         """
-        return self._strong()
+        return self._join_words(self._strong_words())
 
     def super_strong(self) -> str:
         """Generate super strong password (backward compatibility).
@@ -278,4 +318,4 @@ class SyllableGenerator(BaseGenerator):
         str
             Super strong password.
         """
-        return self._super_strong()
+        return self._join_words(self._super_strong_words())

@@ -9,7 +9,7 @@ from rich.text import Text
 
 from clinkey_cli.const import LOGO, LOGOS
 
-console = Console(style="on grey11")
+console = Console()
 
 
 def _fullscreen_logo(logo: Text | str) -> Layout:
@@ -117,15 +117,36 @@ def animate_logo(fullscreen: bool = False):
     rotate_logo(0.2, fullscreen)
 
 
-def display_logo(fullscreen: bool = False):
+def _display_logo(fullscreen: bool = False):
     if fullscreen:
         layout = _fullscreen_logo(LOGO)
     else:
         layout = Align.center(LOGO)
     console.print(layout)
 
+def display_logo(fullscreen: bool = False):
+    # _display_logo(fullscreen=fullscreen)
+    console.clear()
+    console.print(
+        Align.center(
+            Panel.fit(
+                Text(
+                    r"""
+   ___|  |     _ _|   \  |  |  /  ____| \ \   / 
+  |      |       |     \ |  ' /   __|    \   /  
+  |      |       |   |\  |  . \   |         |   
+ \____| _____| ___| _| \_| _|\_\ _____|    _|   
+                                                
+                    """,
+                    style="bold light_green",
+                ),
+                padding=(0, 1),
+                box=box.ROUNDED,
+                border_style="orchid1"
+            )
+        )
+    )
+    
 
 if __name__ == "__main__":
-    animate_logo()
     display_logo()
-    input()

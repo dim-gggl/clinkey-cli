@@ -7,6 +7,62 @@ import pytest
 from clinkey_cli.generators.syllable import SyllableGenerator
 
 
+def _assert_word_pattern(password: str, gen: SyllableGenerator):
+    """Ensure password follows four CV words joined by hyphens.
+    
+    Checks that the password structure matches the expected format (4 words)
+    and that each word is composed of valid syllables (simple or complex).
+    """
+
+    letters_only = re.sub(r"[^A-Z-]", "", password)
+    parts = letters_only.split("-")
+
+    assert len(parts) == 4
+    assert all(parts)
+    assert all(len(part) >= 2 for part in parts)
+    
+    # We expect at least one word to be longer than 2 chars usually, 
+    # but strictly speaking with random choice it's possible to have all simple syllables (len 2).
+    # However, the generator guarantees: "Guarantees at least one word uses multiple CV pairs" 
+    # OR now multiple syllables.
+    # The old test checked: assert any(len(part) > 2 for part in parts)
+    # With complex syllables (len 3), this is even more likely.
+    assert any(len(part) > 2 for part in parts)
+    
+    # Check variability in length
+    assert len({len(part) for part in parts}) > 1
+
+    # Build regex for valid syllables
+    # Simple are defined as lowercase, complex as uppercase in generator
+    # We normalize to uppercase for matching
+    simple = [s.upper() for s in gen._simple_syllables]
+    complex_syl = [s.upper() for s in gen._complex_syllables]
+    
+    # Sort by length descending to ensure greedy matching correct order (longest first)
+    all_syl = sorted(simple + complex_syl, key=len, reverse=True)
+    
+    # Escape just in case, though they are letters
+    pattern_str = "|".join(re.escape(s) for s in all_syl)
+    regex = re.compile(f"(?:{pattern_str})+")
+
+    for part in parts:
+        assert regex.fullmatch(part), f"Word part '{part}' is not composed of valid syllables"
+
+
+def _extract_words(password: str) -> list[str]:
+    """Return the list of letter-only words from a password."""
+
+    letters_only = re.sub(r"[^A-Z-]", "", password)
+    return [part for part in letters_only.split("-") if part]
+
+
+def _assert_unique_words(password: str):
+    """Ensure no word is repeated inside the password."""
+
+    words = _extract_words(password)
+    assert len(words) == len(set(words))
+
+
 class TestSyllableGeneratorInit:
     """Test SyllableGenerator initialization."""
 
@@ -51,20 +107,23 @@ class TestSyllableGeneratorGenerate:
 
     def test_generate_normal_type(self, gen):
         """Test normal type generates letters and separators."""
-        password = gen.generate(length=30, password_type="normal")
-        assert re.match(r"^[A-Z\-_]+$", password)
+        password = gen.normal()
+        _assert_word_pattern(password, gen)
 
     def test_generate_strong_type(self, gen):
         """Test strong type includes digits."""
-        password = gen.generate(length=30, password_type="strong")
-        assert re.match(r"^[A-Z0-9\-_]+$", password)
+        password = gen.strong()
+        _assert_word_pattern(password, gen)
         assert any(c.isdigit() for c in password)
+        _assert_unique_words(password)
 
     def test_generate_super_strong_type(self, gen):
         """Test super_strong type includes specials."""
-        password = gen.generate(length=40, password_type="super_strong")
+        password = gen.super_strong()
+        _assert_word_pattern(password, gen)
         assert any(c.isalpha() for c in password)
         assert any(c.isdigit() for c in password)
+        _assert_unique_words(password)
 
     def test_generate_with_lowercase(self, gen):
         """Test lowercase transformation."""
@@ -82,6 +141,11 @@ class TestSyllableGeneratorGenerate:
         password = gen.generate(length=20, separator="@")
         # Should contain @ or be too short for separators
         assert "@" in password or len(password) < 10
+
+    def test_generate_unique_words_normal(self, gen):
+        """Ensure normal passwords never repeat a word."""
+        password = gen.normal()
+        _assert_unique_words(password)
 
 
 class TestSyllableGeneratorValidation:
