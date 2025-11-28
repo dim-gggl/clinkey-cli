@@ -19,7 +19,7 @@ from rich.text import Text
 from rich.live import Live
 from rich.prompt import Prompt
 
-from clinkey_cli.logos import animate_logo, display_logo
+from clinkey_cli.logos import display_logo
 from clinkey_cli.const import centered_spinner
 from clinkey_cli.main import Clinkey
 from clinkey_cli.generators import registry

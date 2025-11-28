@@ -3,4 +3,4 @@
 from .main import Clinkey, clinkey
 
 __all__ = ["Clinkey", "clinkey"]
-__version__ = "1.0.2"
+__version__ = "2.0.0"

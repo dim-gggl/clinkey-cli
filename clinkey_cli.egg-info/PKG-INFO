@@ -1,6 +1,6 @@
 Metadata-Version: 2.4
 Name: clinkey-cli
-Version: 2.0.0b2
+Version: 2.0.0
 Summary: A command-line tool for generating strong passwords and secret keys.
 Author: Dimitri Gaggioli
 License-Expression: MIT
