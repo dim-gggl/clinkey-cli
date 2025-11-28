@@ -59,6 +59,10 @@ extend-exclude = '''
   | \.mypy_cache
   | \.tox
   | \.venv
+  | \.claude
+  | \.cursorrules
+  | \.codex
+  | \.AGENTS
   | build
   | dist
 )/
