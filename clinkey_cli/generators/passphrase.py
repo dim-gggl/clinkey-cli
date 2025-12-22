@@ -127,7 +127,7 @@ class PassphraseGenerator(BaseGenerator):
         if capitalize:
             words = [word.capitalize() for word in words]
         else:
-            words = [word.lower() for word in words]
+            words = [word.upper() for word in words]
 
         # Join with separator
         return separator.join(words)

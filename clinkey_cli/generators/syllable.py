@@ -89,7 +89,18 @@ class SyllableGenerator(BaseGenerator):
             "VNI", "VNO", "VNU", "VNY", "VHA", "VHE", "VHI", "VHO",
             "VHU", "VHY", "VJA", "VJE", "VJI", "VJO", "VJU", "VJY",
             "WHA", "WHE", "WHI", "WHO", "WHU", "ZRE", "ZRU", "ZRI",
-            "ZRO", "ZRA"
+            "ZRO", "ZRA", "ABD", "ABF", "ABG", "ABH", "ABJ", "ABK",
+            "ABL", "ABN", "ABR", "ABS", "ABT", "ABV", "ABZ", "ACD",
+            "ACF", "ACH", "ACJ", "ACK", "ACL", "ACM", "ACN", "ACP",
+            "ACR", "ACS", "ACT", "ACV", "ACZ", "EBD", "EBF", "EBH",
+            "EBJ", "EBK", "EBL", "EBN", "EBR", "EBS", "EBT", "EBV",
+            "EBZ", "ECF", "ECH", "ECJ", "ECK", "ECL", "ECM", "ECN",
+            "ECP", "ECR", "ECS", "ECT", "ECV", "ECZ", "EDF", "EDH",
+            "EDJ", "EDK", "EDL", "EDN", "EDR", "EDS", "EDT", "EDV",
+            "EDZ", "EFF", "EFH", "EFJ", "EFK", "EFL", "EFN", "EFP",
+            "EFR", "EFS", "EFT", "EFV", "EFZ", "EGF", "EGH", "EGJ",
+            "EGK", "EGL", "EGN", "EGP", "EGR", "EGS", "EGT", "EGV",
+            "EGZ", "EHF", "EHJ", "EHK", "EHL", "EHN", "EHP", "EHR"
         ]
 
         # Default separators
@@ -105,7 +116,8 @@ class SyllableGenerator(BaseGenerator):
     def generate(
         self,
         length: int,
-        password_type: str = "normal",
+        # This is a preset label, not a hardcoded password.
+        password_type: str = "normal",  # nosec B107
         lower: bool = False,
         no_separator: bool = False,
         separator: str | None = None,

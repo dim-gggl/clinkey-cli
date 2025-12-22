@@ -40,7 +40,13 @@ def hash_password_sha1(password: str) -> str:
     if not isinstance(password, str):
         raise ValueError("Password must be a string")
 
-    return hashlib.sha1(password.encode("utf-8")).hexdigest().upper()
+    # SHA-1 is required by the HaveIBeenPwned API; this is not used to protect
+    # stored secrets. Setting usedforsecurity=False also avoids FIPS-related
+    # restrictions and silences Bandit (B324).
+    return hashlib.sha1(
+        password.encode("utf-8"),
+        usedforsecurity=False,
+    ).hexdigest().upper()
 
 
 def get_hash_prefix_suffix(hash_value: str) -> tuple[str, str]:

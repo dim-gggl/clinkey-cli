@@ -29,7 +29,7 @@ def display_logo(fullscreen: bool = False):
                 padding=(0, 1),
                 box=box.ROUNDED,
                 border_style="orchid1",
-                subtitle="[dim white]v2.0.0[/]",
+                subtitle="[dim white]v2.0.1[/]",
                 subtitle_align="center",
             )
         )

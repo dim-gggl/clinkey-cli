@@ -169,7 +169,8 @@ class Clinkey:
         str
             Generated password whose length exactly matches ``target_length``.
         """
-        password = ""
+        # Initializing an accumulator string, not a hardcoded credential.
+        password = ""  # nosec B105
         while len(password) < target_length:
             chunk = generator()
             if len(password) + len(chunk) <= target_length:
@@ -235,7 +236,7 @@ class Clinkey:
         separator_to_use = (
             new_separator if new_separator is not None else self.new_separator
         )
-        if separator_to_use is not None:
+        if separator_to_use:
             if len(separator_to_use) != 1:
                 raise ValueError("separator must be exactly one character")
             if separator_to_use not in SAFE_SEPARATOR_CHARS:
